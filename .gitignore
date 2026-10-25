@@ -3,7 +3,7 @@ node_modules/
 .env.*
 !.env.example
 logs/
-.log
+*.log
 npm-debug.log
 .DS_Store
 Thumbs.db
@@ -12,3 +12,5 @@ desktop.ini
 .idea/
 .tmp
 .temp
+backend/node_modules/
+backend/.env
