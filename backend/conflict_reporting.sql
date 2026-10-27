@@ -7,6 +7,7 @@ CREATE TABLE departments (
 CREATE TABLE courses (
     courses_id INT PRIMARY KEY,
     courses_name VARCHAR(255) NOT NULL,
+    courses_code VARCHAR(20) NOT NULL,
     department_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
