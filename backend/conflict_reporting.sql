@@ -43,6 +43,6 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (booking_id) REFERENCES bookings(id),
+    FOREIGN KEY (booking_id) REFERENCES bookings(id)
 );
 
