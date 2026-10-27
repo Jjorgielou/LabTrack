@@ -2,6 +2,7 @@ const express = require("express");
 require("dotenv").config();
 
 const db = require("./config/db");
+const labRoutes = require("./routes/laboratories");
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
@@ -30,6 +31,8 @@ app.get("/api/health/db", async (req, res)=> {
         });
     }
 });
+
+app.use("/api/laboratories", labRoutes);
 
 app.listen(PORT, () => {
     console.log(`LabTrack server is running at http://localhost:${PORT}`);
