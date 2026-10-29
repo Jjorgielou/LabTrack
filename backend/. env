@@ -1,0 +1,5 @@
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=CORTIS123
+DB_NAME=labtrack_db
+PORT=3000

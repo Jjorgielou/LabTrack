@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/laboratoryController');
 
-router.get('/', ctrl. getAllLabs);
+router.get('/', ctrl.getAllLabs);
+router.get('/unavailable', ctrl.getUnavailableLabs);
 router.get('/:id', ctrl.getLabById);
 router.post('/', ctrl.createLab);
 router.put('/:id', ctrl.updateLab);

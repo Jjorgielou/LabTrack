@@ -1,11 +1,4 @@
-const mysql = require('mysql2/promise');
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'CORTIS123',
-  database: 'labtrack_db'
-});
+const pool = require('../config/db');
 
 const ok = (res, data, status = 200) => res.status(status).json({
   success: true,
@@ -21,8 +14,8 @@ const fail = (res, code, message, status) => res.status(status).json({
 const LAB_JOIN = `
   SELECT l.*, lt.type_name, ls.status_name
   FROM laboratories l
-  JOIN lab_types lt ON l.type_id = lt.id
-  JOIN lab_statuses ls ON l.status_id = ls.id`;
+  INNER JOIN lab_types lt ON l.type_id = lt.id
+  INNER JOIN lab_statuses ls ON l.status_id = ls.id`;
 
 
 exports.getAllLabs = async (req, res) => {
@@ -35,9 +28,19 @@ exports.getAllLabs = async (req, res) => {
 };
 
 
+exports.getUnavailableLabs = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`${LAB_JOIN} WHERE ls.status_name IN ('Maintenance', 'Inactive')`);
+    ok(res, rows);
+  } catch (err) {
+    fail(res, 'SERVER_ERROR', err.message, 500);
+  }
+};
+
+
 exports.getLabById = async (req, res) => {
   try {
-    const [rows] = await pool.query(`${LAB_JOIN} WHERE l.lab_id = ?`, [req.params.id]);
+    const [rows] = await pool.query(`${LAB_JOIN} WHERE l.id = ?`, [req.params.id]);
     if (rows.length === 0) return fail(res, 'NOT_FOUND', 'Lab not found.', 404);
     ok(res, rows[0]);
   } catch (err) {
@@ -61,7 +64,7 @@ exports.createLab = async (req, res) => {
       [lab_name, location, capacity, type_id, status_id]
     );
 
-    ok(res, { lab_id: result.insertId, lab_name, location, capacity, type_id, status_id }, 201);
+    ok(res, { id: result.insertId, lab_name, location, capacity, type_id, status_id }, 201);
   } catch (err) {
     fail(res, 'SERVER_ERROR', err.message, 500);
   }
@@ -76,12 +79,12 @@ exports.updateLab = async (req, res) => {
     const [result] = await pool.query(
       `UPDATE laboratories
        SET lab_name = ?, location = ?, capacity = ?, type_id = ?, status_id = ?
-       WHERE lab_id = ?`,
+       WHERE id = ?`,
       [lab_name, location, capacity, type_id, status_id, req.params.id]
     );
 
     if (result.affectedRows === 0) return fail(res, 'NOT_FOUND', 'Lab not found.', 404);
-    ok(res, { lab_id: req.params.id, lab_name, location, capacity, type_id, status_id });
+    ok(res, { id: req.params.id, lab_name, location, capacity, type_id, status_id });
   } catch (err) {
     fail(res, 'SERVER_ERROR', err.message, 500);
   }
@@ -90,7 +93,7 @@ exports.updateLab = async (req, res) => {
 
 exports.deleteLab = async (req, res) => {
   try {
-    const [result] = await pool.query('DELETE FROM laboratories WHERE lab_id = ?', [req.params.id]);
+    const [result] = await pool.query('DELETE FROM laboratories WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return fail(res, 'NOT_FOUND', 'Lab not found.', 404);
     res.status(204).send();
   } catch (err) {
