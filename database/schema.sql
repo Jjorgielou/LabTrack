@@ -1,5 +1,8 @@
 contains the LabTrack database table definitions and relationships
 
+CREATE DATABASE IF NOT EXISTS labtrack_db;
+USE labtrack_db;
+
 CREATE TABLE roles (
 role_id int AUTO_INCREMENT PRIMARY KEY,
 role_name varchar(50) not null unique,

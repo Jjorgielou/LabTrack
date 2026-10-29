@@ -96,3 +96,49 @@ DO NOT FORGET!
 - Request a review from a teammate and address feedback.
 - Merge the reviewed pull request into main using the merge method required by the sir.
 - Update documentation when a feature, database field, route, or setup step changes.
+
+Setup Instructions
+Prerequisite
+- Node.js and npm
+- MySQL Server
+- MySQL Workbench (recommended)
+- Git
+
+1. Clone the repository
+git clone https://github.com/Jjorgielou/LabTrack.git
+cd LabTrack
+
+2. Create the database
+Open MySQL Workbench and execute the SQL script in:
+`database/schema.sql`
+
+maggama nig initial database tables for user and access management.
+To insert the example roles and users, execute:
+`database/sample-data.sql`
+Only run the sample-data script kung ang sample records have not already been inserted.
+
+3. Configure environment variables
+Inside the `backend` folder, create a `.env` file containing your own local MySQL credentials:
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_local_mysql_password
+DB_NAME=labtrack_db
+
+Use the variable names expected by `backend/config/db.js`. If the existing configuration uses different names, update this example to match it.
+
+AYAW I COMMIT ANG  `.env` KAY NAA DIHA ANG PASSWORD NIMO SA DATABASE!
+
+4. Install backend dependencies
+From the project root, run:
+cd backend
+npm install
+
+5. Start the backend
+npm run dev
+The server should start on `http://localhost:3000`, unless another port is configured.
+
+6. Test the API
+Open these endpoints in a browser:
+- `http://localhost:3000/` — checks whether the backend is running.
+- `http://localhost:3000/api/health/db` — checks the MySQL connection.
