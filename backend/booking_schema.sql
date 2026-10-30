@@ -1,3 +1,22 @@
+CREATE TABLE `booking_statuses` (
+  `status_id` int NOT NULL AUTO_INCREMENT,
+  `status_name` varchar(255) NOT NULL,
+  PRIMARY KEY (`status_id`),
+  UNIQUE KEY `status_name` (`status_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `schedules` (
+  `schedule_id` int NOT NULL AUTO_INCREMENT,
+  `lab_id` int NOT NULL,
+  `schedule_date` date NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `is_available` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`schedule_id`),
+  CONSTRAINT `schedules_chk_1` CHECK ((`end_time` > `start_time`)),
+  CONSTRAINT `fk_schedules_lab` FOREIGN KEY (`lab_id`) REFERENCES `laboratories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
  CREATE TABLE `bookings` (
   `booking_id` int NOT NULL AUTO_INCREMENT,
   `requester_id` int DEFAULT NULL,
@@ -12,25 +31,11 @@
   PRIMARY KEY (`booking_id`),
   KEY `fk_booking_status` (`status_id`),
   KEY `fk_booking_schedule` (`schedule_id`),
+  KEY `fk_booking_lab` (`lab_id`),
+  KEY `fk_booking_requester` (`requester_id`),
+  CONSTRAINT `fk_booking_lab` FOREIGN KEY (`lab_id`) REFERENCES `laboratories` (`id`),
+  CONSTRAINT `fk_booking_requester` FOREIGN KEY (`requester_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `fk_booking_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`schedule_id`),
   CONSTRAINT `fk_booking_status` FOREIGN KEY (`status_id`) REFERENCES `booking_statuses` (`status_id`),
   CONSTRAINT `bookings_chk_1` CHECK ((`end_time` > `start_time`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `schedules` (
-  `schedule_id` int NOT NULL AUTO_INCREMENT,
-  `lab_id` int NOT NULL,
-  `schedule_date` date NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `is_available` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`schedule_id`),
-  CONSTRAINT `schedules_chk_1` CHECK ((`end_time` > `start_time`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `booking_statuses` (
-  `status_id` int NOT NULL AUTO_INCREMENT,
-  `status_name` varchar(255) NOT NULL,
-  PRIMARY KEY (`status_id`),
-  UNIQUE KEY `status_name` (`status_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
