@@ -1,5 +1,6 @@
 const userModel = require("../models/userModel");
 const auditLogModel = require("../models/auditLogModel");
+const db = require("../config/db");
 
 // GET /api/users
 async function getAllUsers(req, res) {
@@ -130,6 +131,22 @@ async function updateUserRole(req, res) {
             });
         }
 
+      // Prevent demoting the last Admin
+        const [adminRows] = await db.query(
+            `SELECT COUNT(*) AS total
+             FROM users
+             INNER JOIN roles ON users.role_id = roles.role_id
+             WHERE roles.role_name = 'Admin'`
+        );
+
+        if (existingUser.role_name === "Admin" &&
+            role_id !== 1 &&
+            adminRows[0].total <= 1) {
+            return res.status(400).json({
+                message: "You cannot demote the last Admin account."
+            });
+        }
+
         const result = await userModel.updateUserRole(userId, role_id);
 
         if (result.affectedRows === 0) {
@@ -186,6 +203,25 @@ async function deleteUser(req, res) {
                 message: "User not found."
             });
         }
+
+        // Prevent deleting the last Admin
+        if (existingUser.role_name === "Admin") {
+            const db = require("../config/db");
+
+        const [adminCount] = await db.query(
+            `SELECT COUNT(*) AS total
+             FROM users
+             INNER JOIN roles
+                ON users.role_id = roles.role_id
+             WHERE roles.role_name = 'Admin'`
+        );
+
+         if (adminCount[0].total <= 1) {
+            return res.status(400).json({
+                message: "You cannot delete the last Admin account."
+            });
+        }
+    }
 
         await userModel.deleteUser(userId);
         
