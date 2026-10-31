@@ -42,13 +42,14 @@ exports.createBooking = (req, res) => {
     } = req.body;
 
     if (
-        !lab_id ||
-        !requested_date ||
-        !start_time ||
-        !end_time ||
-        !purpose ||
-        !status_id
-    ) {
+    !lab_id ||
+    !schedule_id ||
+    !requested_date ||
+    !start_time ||
+    !end_time ||
+    !purpose ||
+    !status_id
+) {
         return fail(
             res,
             'MISSING_FIELDS',
@@ -90,6 +91,15 @@ createBooking(bookingData, (err, results) => {
         );
     }
 
+if (results.invalidSchedule) {
+    return fail(
+        res,
+        'INVALID_SCHEDULE',
+        'The selected schedule does not exist or is unavailable.',
+        400
+    );
+}
+
     if (results.conflict) {
         return fail(
             res,
@@ -105,3 +115,4 @@ createBooking(bookingData, (err, results) => {
     }, 201);
 });
 }
+
