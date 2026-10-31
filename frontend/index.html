@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LabTrack - Lab Status Checker</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; cursor: pointer; background: #7197c0; color: white; border: none; border-radius: 4px; width: 100%; }
+        button:hover { background: #557fad; }
+        .status-box { margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-size: 1.2em; font-weight: bold; display: none; }
+        .status-available { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-maintenance { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status-unavailable { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+                
+        .lab-list { margin-top: 30px; }
+        .lab-item { 
+            background: white; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            border-left: 5px solid #ccc;
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lab-item:hover { transform: translateX(5px); background: #f9f9f9; }
+        .lab-item.available { border-left-color: #28a745; }
+        .lab-item.maintenance { border-left-color: #ffc107; }
+        .lab-item.unavailable { border-left-color: #dc3545; }
+                
+        .btn-group { display: flex; gap: 5px; }
+        .btn-delete { 
+            background: #e34555; 
+            width: auto; 
+            padding: 5px 10px; 
+            margin: 0;
+            font-size: 0.8em;
+        }
+        .btn-edit { 
+            background: #bae7be; 
+            color: black;
+            width: auto; 
+            padding: 5px 10px; 
+            margin: 0;
+            font-size: 0.8em;
+        }
+        .btn-delete:hover { background: #c82333; }
+        .btn-edit:hover { background: #7ccf83; }       
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LabTrack Status Checker</h1>      
+        
+        <button onclick="toggleForm()">Add a Laboratory</button>
+        
+        <div id="addForm" class="card hidden">
+            <h3 id="formTitle">Create New Lab</h3>
+            <input type="hidden" id="editId" value="">
+            
+            <label>Lab Name:</label>
+            <input type="text" id="lab_name" placeholder="e.g., Computer Lab 101" />
+            
+            <label>Location:</label>
+            <input type="text" id="location" placeholder="e.g., Building A, Room 101" />
+            
+            <label>Capacity:</label>
+            <input type="number" id="capacity" placeholder="e.g., 40" />
+            
+            <label>Type:</label>
+            <select id="type_id">
+                <option value="1">Computer Lab</option>
+                <option value="2">General Lab</option>
+                <option value="3">Physics Lab</option>
+                <option value="4">Chemistry Lab</option>
+                <option value="5">Speech Lab</option>
+                <option value="6">Multimedia Lab</option>
+            </select>
+            
+            <label>Status:</label>
+            <select id="status_id">
+                <option value="1">Available</option>
+                <option value="2">Maintenance</option>
+                <option value="3">Unavailable</option>
+            </select>
+            
+            <button id="submitBtn" onclick="saveLab()">Add Laboratory</button>
+        </div>
+        
+        <div class="card">
+            <h3>Selected Laboratory Status</h3>
+            <p id="selectedName" style="font-size: 1.5em; font-weight: bold;">Click a lab below to check status</p>
+            <div id="statusResult" class="status-box"></div>
+        </div>
+  
+        <h3>Select a Laboratory:</h3>
+        <div id="labList" class="lab-list"></div>
+    </div>
+
+    <script>
+        const API = "http://localhost:3000/api"; 
+        let allLabs = [];
+
+        function toggleForm() {
+            const form = document.getElementById("addForm");
+            if (form.classList.contains("hidden")) {
+                form.classList.remove("hidden");
+                resetForm();
+            } else {
+                form.classList.add("hidden");
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("formTitle").innerText = "Create New Lab";
+            document.getElementById("submitBtn").innerText = "Add Laboratory";
+            document.getElementById("editId").value = "";
+            document.getElementById("lab_name").value = "";
+            document.getElementById("location").value = "";
+            document.getElementById("capacity").value = "";
+            document.getElementById("type_id").value = "1";
+            document.getElementById("status_id").value = "1";
+        }
+  
+        async function loadLabs() {
+            try {
+                const res = await fetch(`${API}/laboratories`);
+                const data = await res.json();
+                if(data.success) {
+                    allLabs = data.data;
+                    renderList(allLabs);
+                }
+            } catch (err) {
+                console.error("Error loading labs:", err);
+            }
+        }
+
+        
+        function renderList(labs) {
+            const list = document.getElementById("labList");
+            list.innerHTML = "";
+            
+            if (labs.length === 0) {
+                list.innerHTML = "<p>No laboratories found in database.</p>";
+                return;
+            }
+
+            labs.forEach(lab => {
+                const div = document.createElement("div");    
+                
+                let statusClass = "";
+                if(lab.status_name === "Available") statusClass = "available";
+                else if(lab.status_name === "Maintenance") statusClass = "maintenance";
+                else statusClass = "unavailable";
+
+                div.className = `lab-item ${statusClass}`;
+                div.innerHTML = `
+                    <div>
+                        <strong>${lab.lab_name}</strong><br>
+                        <small>Location: ${lab.location} | Capacity: ${lab.capacity}</small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-edit" onclick="editLab(event, ${lab.id})">Edit</button>
+                        <button class="btn-delete" onclick="deleteLab(event, ${lab.id})">Delete</button>
+                    </div>
+                `;    
+                
+                div.onclick = () => showStatus(lab);
+                
+                list.appendChild(div);
+            });
+        }
+        
+        function showStatus(lab) {
+            const nameDisplay = document.getElementById("selectedName");
+            const resultBox = document.getElementById("statusResult");
+            
+            nameDisplay.innerText = lab.lab_name;
+            
+            resultBox.style.display = "block";
+            resultBox.className = "status-box"; 
+            
+            
+            if (lab.status_name === "Available") {
+                resultBox.classList.add("status-available");
+                resultBox.innerHTML = `AVAILABLE`;
+            } else if (lab.status_name === "Maintenance") {
+                resultBox.classList.add("status-maintenance");
+                resultBox.innerHTML = `UNDER MAINTENANCE`;
+            } else {
+                resultBox.classList.add("status-unavailable");
+                resultBox.innerHTML = `UNAVAILABLE`;
+            }
+        }
+        
+        async function saveLab() {
+            const editId = document.getElementById("editId").value;
+            const body = {
+                lab_name: document.getElementById("lab_name").value,
+                location: document.getElementById("location").value,
+                capacity: document.getElementById("capacity").value,
+                type_id: document.getElementById("type_id").value,
+                status_id: document.getElementById("status_id").value
+            };
+
+            let url = `${API}/laboratories`;
+            let method = "POST";
+
+            if (editId) {
+                url = `${API}/laboratories/${editId}`;
+                method = "PUT";
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert(editId ? "Lab updated!" : "Lab added!");
+                toggleForm(); 
+                loadLabs(); 
+            } else {
+                alert("Error: " + data.error.message);
+            }
+        }
+       
+        function editLab(event, id) {
+            event.stopPropagation(); 
+            
+            const lab = allLabs.find(l => l.id === id);
+            if (!lab) return;
+
+            document.getElementById("editId").value = lab.id;
+            document.getElementById("lab_name").value = lab.lab_name;
+            document.getElementById("location").value = lab.location;
+            document.getElementById("capacity").value = lab.capacity;
+            document.getElementById("type_id").value = lab.type_id;
+            document.getElementById("status_id").value = lab.status_id;
+            document.getElementById("formTitle").innerText = "Edit Lab";
+            document.getElementById("submitBtn").innerText = "Update Laboratory";
+            document.getElementById("addForm").classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteLab(event, id) {
+            event.stopPropagation(); 
+            
+            if(confirm("Are you sure you want to delete this lab?")) {
+                await fetch(`${API}/laboratories/${id}`, { method: "DELETE" });
+                loadLabs(); 
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadLabs);
+    </script>
+</body>
+</html>
