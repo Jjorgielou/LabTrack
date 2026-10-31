@@ -1,4 +1,4 @@
-
+const userRoutes = require("./routes/users");
 const express = require("express");
 require("dotenv").config();
 
@@ -8,6 +8,8 @@ const labRoutes = require("./routes/laboratories");
 const authRoutes = require("./routes/auth");
 const requireAuth = require("./middleware/requireAuth");
 const requireRole = require("./middleware/requireRole");
+const auditLogRoutes = require("./routes/auditLogs");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000
@@ -31,6 +33,8 @@ app.use(session({
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/laboratories", labRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
 
 // Welcome route
 app.get("/", (req, res) => {

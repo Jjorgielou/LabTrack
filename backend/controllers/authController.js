@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
+const auditLogModel = require("../models/auditLogModel");
 
 const login = async (req, res) => {
     try {
@@ -26,6 +27,9 @@ const login = async (req, res) => {
             [email.trim()]
         );
 
+        console.log("Login email:", email.trim());
+        console.log("Matching users found:", users.length);
+
         if (users.length === 0) {
             return res.status(401).json({
                 message: "Invalid email or password."
@@ -50,6 +54,11 @@ const login = async (req, res) => {
             email: user.email,
             role: user.role_name
         };
+        await auditLogModel.safeCreateAuditLog(
+            user.user_id,
+            "USER_LOGIN",
+            `User ${user.email} logged in successfully.`
+        );
 
         return res.status(200).json({
             message: "Login successful.",
@@ -68,7 +77,21 @@ const login = async (req, res) => {
     }
 };
 
-function logout(req, res) {
+async function logout(req, res) {
+    const user = req.session?.user;
+
+    if (!user) {
+        return res.status(401).json({
+            message: "You are not logged in."
+        });
+    }
+
+    await auditLogModel.safeCreateAuditLog(
+        user.user_id,
+        "USER_LOGOUT",
+        `User ${user.email} logged out successfully.`
+    );
+
     req.session.destroy((error) => {
         if (error) {
             console.error("Logout error:", error.message);
@@ -137,6 +160,12 @@ async function register(req, res) {
                 email,
                 passwordHash
             ]
+        );
+
+        await auditLogModel.safeCreateAuditLog(
+            result.insertId,
+            "USER_REGISTERED",
+            `New student account registered: ${email}`
         );
 
         return res.status(201).json({
