@@ -1,32 +1,52 @@
+const express = require('express');
+const router = express.Router();
 const db = require('../config/db');
 
-exports.getMaintenance = async (req, res) => {
+// GET all maintenance requests
+router.get('/', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM maintenance_requests');
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-};
-
-exports.createMaintenance = async (req, res) => {
-    try {
-        const { equipment, description, status_id } = req.body;
-        await db.query(
-            'INSERT INTO maintenance_requests (equipment_name, description, status_id) VALUES (?, ?, ?)',
-            [equipment, description, status_id]
-        );
-        res.json({ success: true, message: 'Maintenance request created successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-};
-
-exports.deleteMaintenance = async (req, res) => {
-    try {
-        await db.query('DELETE FROM maintenance_requests WHERE id = ?', [req.params.id]);
-        res.json({ success: true, message: 'Maintenance request deleted successfully' });
+        res.json(rows);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        console.error('Database error:', err.message);
+        res.status(500).json({ error: err.message });
     }
-};
+});
+
+// POST a new maintenance request
+router.post('/', async (req, res) => {
+    const { equipment_id, reported_problem } = req.body;
+    try {
+        const [result] = await db.query(
+            'INSERT INTO maintenance_requests (equipment_id, reported_problem, status) VALUES (?, ?, ?)',
+            [equipment_id, reported_problem, 'Pending']
+        );
+        res.status(201).json({ 
+            id: result.insertId, 
+            equipment_id, 
+            reported_problem, 
+            status: 'Pending' 
+        });
+    } catch (err) {
+        console.error('Database error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT to update request status (e.g., "In Progress" or "Resolved")
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        await db.query(
+            'UPDATE maintenance_requests SET status = ? WHERE id = ?',
+            [status, id]
+        );
+        res.json({ message: 'Status updated successfully', id, status });
+    } catch (err) {
+        console.error('Database error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;
