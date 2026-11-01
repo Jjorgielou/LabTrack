@@ -554,3 +554,40 @@ body {
 .btn-role:hover {
     background: #bfdbfe;
 }
+
+/* DASHBOARD RECENT ACTIVITY */
+.activity-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item strong {
+    display: block;
+    color: #173b63;
+    margin-bottom: 5px;
+}
+
+.activity-item p {
+    color: #475569;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.activity-item small {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+@media (max-width: 600px) {
+    .activity-item {
+        flex-direction: column;
+    }
+}

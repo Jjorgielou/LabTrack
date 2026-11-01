@@ -14,6 +14,8 @@ const auditLogRoutes = require("./routes/auditLogs");
 const requireAuth = require("./middleware/requireAuth");
 const requireRole = require("./middleware/requireRole");
 
+const dashboardController = require("./controllers/dashboardController");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -43,6 +45,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/laboratories", labRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
+app.get("/api/dashboard/stats", requireAuth, requireRole("Admin"), dashboardController.getDashboardStats);
 
 // Welcome Route
 app.get("/", (req, res) => {
