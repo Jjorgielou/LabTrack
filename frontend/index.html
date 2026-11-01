@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabTrack - Booking Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>LabTrack</h1>
+        <p>Laboratory Booking and Scheduling</p>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <h2>Booking Dashboard</h2>
+            <p>Manage your laboratory booking requests.</p>
+        </section>
+
+        <section class="booking-form">
+            <h2>Request a Booking</h2>
+
+            <form id="bookingForm">
+
+                <label for="labId">Laboratory ID</label>
+                <input type="number" id="labId" required>
+
+                <label for="scheduleId">Schedule ID</label>
+                <input type="number" id="scheduleId" required>
+
+                <label for="bookingDate">Requested Date</label>
+                <input type="date" id="bookingDate" required>
+
+                <label for="startTime">Start Time</label>
+                <input type="time" id="startTime" required>
+
+                <label for="endTime">End Time</label>
+                <input type="time" id="endTime" required>
+
+                <label for="purpose">Purpose</label>
+                <textarea id="purpose" required></textarea>
+
+                <button type="submit">Submit Booking</button>
+
+            </form>
+
+            <p id="message"></p>
+        </section>
+
+        <section class="booking-list">
+            <h2>Booking Records</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Laboratory</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Purpose</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="bookingTable">
+                    <!-- Booking records will appear here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
