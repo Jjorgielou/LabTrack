@@ -10,7 +10,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Booking routes
 app.use("/api/bookings", bookingRoutes);
+
+// Schedule routes
 app.use("/api/schedules", scheduleRoutes);
 
 app.get("/", (req, res) => {
