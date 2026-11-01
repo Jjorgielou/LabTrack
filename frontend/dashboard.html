@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | LabTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">LT</div>
+                <h2>LabTrack</h2>
+            </div>
+
+            <p class="sidebar-label">MAIN MENU</p>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="laboratories.html" class="nav-link">Laboratories</a>
+                <a href="equipment.html" class="nav-link">Equipment</a>
+                <a href="bookings.html" class="nav-link">Bookings & Schedule</a>
+                <a href="maintenance.html" class="nav-link">Maintenance</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <button id="logoutButton" class="logout-button">
+                    Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Computer Laboratory Management Overview</p>
+                </div>
+
+                <div class="user-info">
+                    <div class="user-avatar">U</div>
+                    <span id="userEmail">Loading...</span>
+                </div>
+            </header>
+
+            <section class="welcome-section">
+                <h2>Welcome to LabTrack!</h2>
+                <p>Manage your computer laboratories, equipment, bookings, and maintenance in one place.</p>
+            </section>
+
+            <!-- SUMMARY CARDS -->
+            <section class="dashboard-stats">
+
+                <div class="stat-card">
+                    <div class="stat-icon">L</div>
+                    <div>
+                        <p>Total Laboratories</p>
+                        <h2 id="totalLaboratories">--</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">E</div>
+                    <div>
+                        <p>Total Equipment</p>
+                        <h2 id="totalEquipment">--</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">B</div>
+                    <div>
+                        <p>Active Bookings</p>
+                        <h2 id="activeBookings">--</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">M</div>
+                    <div>
+                        <p>Pending Maintenance</p>
+                        <h2 id="pendingMaintenance">--</h2>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RECENT ACTIVITY -->
+            <section class="content-card">
+                <div class="section-heading">
+                    <h2>Recent Activity</h2>
+                    <p>Latest activities in the system</p>
+                </div>
+
+                <div id="recentActivity" class="empty-state">
+                    No recent activity to display.
+                </div>
+            </section>
+
+            <footer class="dashboard-footer">
+                © 2026 LabTrack. All rights reserved.
+            </footer>
+
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+
+</body>
+</html>

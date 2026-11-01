@@ -50,10 +50,34 @@ const login = async (req, res) => {
         }
 
         req.session.user = {
-            user_id: user.user_id,
-            email: user.email,
-            role: user.role_name
+        user_id: user.user_id,
+        email: user.email,
+        role: user.role_name
         };
+        console.log("SESSION CREATED:", req.session.user);
+        console.log("SESSION ID:", req.sessionID);
+
+
+        return req.session.save(async (error) => {
+            if (error) {
+                console.error("Session save error:", error);
+
+                return res.status(500).json({
+                    message: "Unable to save login session."
+                });
+            }
+
+            await auditLogModel.safeCreateAuditLog(
+                user.user_id,
+                "USER_LOGIN",
+                `User ${user.email} logged in successfully.`
+            );
+
+            return res.status(200).json({
+                message: "Login successful.",
+                user: req.session.user
+            });
+        });
         await auditLogModel.safeCreateAuditLog(
             user.user_id,
             "USER_LOGIN",
@@ -182,4 +206,17 @@ async function register(req, res) {
     }
 }
 
-module.exports = { login, logout, register };
+const getMe = (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({
+            message: "You are not logged in."
+        });
+    }
+
+    return res.status(200).json({
+        message: "Session is valid.",
+        user: req.session.user
+    });
+};
+
+module.exports = { login, logout, register, getMe };
