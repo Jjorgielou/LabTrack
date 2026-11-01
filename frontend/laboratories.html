@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LabTrack - Lab Status Checker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>LabTrack Status Checker</h1>
+
+        <button onclick="toggleForm()">Add a Laboratory</button>
+
+        <div id="addForm" class="card hidden">
+            <h3 id="formTitle">Create New Lab</h3>
+            <input type="hidden" id="editId" value="">
+
+            <label>Lab Name:</label>
+            <input type="text" id="lab_name" placeholder="e.g., Computer Lab 101" />
+
+            <label>Location:</label>
+            <input type="text" id="location" placeholder="e.g., Building A, Room 101" />
+
+            <label>Capacity:</label>
+            <input type="number" id="capacity" placeholder="e.g., 40" />
+
+            <label>Type:</label>
+            <select id="type_id">
+                <option value="1">Computer Lab</option>
+                <option value="2">General Lab</option>
+                <option value="3">Physics Lab</option>
+                <option value="4">Chemistry Lab</option>
+                <option value="5">Speech Lab</option>
+                <option value="6">Multimedia Lab</option>
+            </select>
+
+            <label>Status:</label>
+            <select id="status_id">
+                <option value="1">Available</option>
+                <option value="2">Maintenance</option>
+                <option value="3">Unavailable</option>
+            </select>
+
+            <button id="submitBtn" onclick="saveLab()">Add Laboratory</button>
+        </div>
+
+        <div class="card">
+            <h3>Selected Laboratory Status</h3>
+            <p id="selectedName" style="font-size: 1.5em; font-weight: bold;">Click a lab below to check status</p>
+            <div id="statusResult" class="status-box"></div>
+        </div>
+
+        <h3>Select a Laboratory:</h3>
+        <div id="labList" class="lab-list"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
