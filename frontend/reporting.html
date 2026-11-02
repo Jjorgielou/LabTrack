@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabTrack - Dashboard</title>
+    <link rel="stylesheet" href="config-dashboard.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h2>LabTrack</h2>
+            <p class="subtitle">Laboratory Management</p>
+
+            <nav>
+                <a href="#" class="nav-link active" data-page="dashboard">Dashboard</a>
+                <a href="#" class="nav-link" data-page="departments">Departments</a>
+                <a href="#" class="nav-link" data-page="courses">Courses</a>
+                <a href="#" class="nav-link" data-page="conflicts">Conflict Logs</a>
+                <a href="#" class="nav-link" data-page="notifications">Notifications</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <header class="topbar">
+                <h2 id="page-title">Dashboard</h2>
+                <span>Admin Panel</span>
+            </header>
+
+            <section id="content">
+
+                <!-- Dashboard -->
+                <div class="page" id="dashboard">
+                    <h2>Welcome to LabTrack!</h2>
+                    <p>Computer Laboratory Equipment and Schedule Tracker</p>
+
+                    <div class="dashboard-cards">
+                        <div class="card">
+                            <h3>Departments</h3>
+                            <p id="department-count">0</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>Courses</h3>
+                            <p id="course-count">0</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>Conflict Logs</h3>
+                            <p id="conflict-count">0</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>Notifications</h3>
+                            <p id="notification-count">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Departments -->
+                <div class="page hidden" id="departments">
+                    <h2>Departments Management</h2>
+                    <p>Manage department information.</p>
+
+                    <form id="department-form">
+                        <input
+                            type="text"
+                            id="department-name"
+                            placeholder="Department Name"
+                            required
+                        >
+
+                        <button type="submit">Add Department</button>
+                    </form>
+
+                    <div id="department-list"></div>
+                </div>
+
+                <!-- Courses -->
+                <div class="page hidden" id="courses">
+                    <h2>Courses Management</h2>
+                    <p>Manage course information.</p>
+
+                    <form id="course-form">
+                        <input
+                            type="text"
+                            id="course-name"
+                            placeholder="Course Name"
+                            required
+                        >
+
+                        <input
+                            type="text"
+                            id="course-code"
+                            placeholder="Course Code"
+                            required
+                        >
+
+                        <select id="course-department" required>
+                            <option value="">Select Department</option>
+                        </select>
+
+                        <button type="submit">Add Course</button>
+                    </form>
+
+                    <div id="course-list"></div>
+                </div>
+
+                <!-- Conflict Logs -->
+                <div class="page hidden" id="conflicts">
+                    <h2>Conflict Logs</h2>
+                    <p>View and monitor schedule conflicts.</p>
+
+                    <div id="conflict-list"></div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="page hidden" id="notifications">
+                    <h2>Notifications</h2>
+                    <p>View system notifications and updates.</p>
+
+                    <div id="notification-list"></div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="config-dashboard.js"></script>
+</body>
+</html>
