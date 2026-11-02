@@ -19,6 +19,8 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 const equipmentRoutes = require("./routes/equipment");
 const equipmentCategoryRoutes = require("./routes/equipmentCategories");
 const maintenanceRoutes = require("./routes/maintenanceroutes");
+const departmentRoutes = require("./routes/departmentRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 
 // Middleware imports
 const requireAuth = require("./middleware/requireAuth");
@@ -71,6 +73,8 @@ app.use("/api/schedules", scheduleRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/equipment-categories", equipmentCategoryRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use("/api/courses", courseRoutes);
 
 // Welcome Route
 app.get("/", (req, res) => {
