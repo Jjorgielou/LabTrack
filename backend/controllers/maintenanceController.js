@@ -1,52 +1,42 @@
-const express = require('express');
-const router = express.Router();
 const db = require('../config/db');
 
-// GET all maintenance requests
-router.get('/', async (req, res) => {
+exports.getAll = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM maintenance_requests');
+        const [rows] = await db.query('SELECT * FROM equipment');
         res.json(rows);
     } catch (err) {
-        console.error('Database error:', err.message);
         res.status(500).json({ error: err.message });
     }
-});
+};
 
-// POST a new maintenance request
-router.post('/', async (req, res) => {
-    const { equipment_id, reported_problem } = req.body;
+exports.create = async (req, res) => {
     try {
+        const { equipment_id, description } = req.body;
         const [result] = await db.query(
-            'INSERT INTO maintenance_requests (equipment_id, reported_problem, status) VALUES (?, ?, ?)',
-            [equipment_id, reported_problem, 'Pending']
+            'INSERT INTO maintenance_reports (equipment_id, description, status) VALUES (?, ?, ?)',
+            [equipment_id, description, 'Pending']
         );
-        res.status(201).json({ 
-            id: result.insertId, 
-            equipment_id, 
-            reported_problem, 
-            status: 'Pending' 
-        });
+        res.status(201).json({ id: result.insertId, message: 'Submitted successfully' });
     } catch (err) {
-        console.error('Database error:', err.message);
         res.status(500).json({ error: err.message });
     }
-});
+};
 
-// PUT to update request status (e.g., "In Progress" or "Resolved")
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
+exports.updateStatus = async (req, res) => {
     try {
-        await db.query(
-            'UPDATE maintenance_requests SET status = ? WHERE id = ?',
-            [status, id]
-        );
-        res.json({ message: 'Status updated successfully', id, status });
+        const { status } = req.body;
+        await db.query('UPDATE maintenance_reports SET status = ? WHERE id = ?', [status, req.params.id]);
+        res.json({ message: 'Status updated successfully' });
     } catch (err) {
-        console.error('Database error:', err.message);
         res.status(500).json({ error: err.message });
     }
-});
+};
 
-module.exports = router;
+exports.remove = async (req, res) => {
+    try {
+        await db.query('DELETE FROM maintenance_reports WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Record deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

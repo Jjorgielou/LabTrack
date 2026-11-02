@@ -2,115 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LabTrack - Maintenance</title>
+    <title>LabTrack - Laboratory Management</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --border: #cbd5e1;
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h2 { margin-top: 0; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-        select, textarea, button {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        textarea { resize: vertical; height: 100px; }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        button:hover { background-color: #1d4ed8; }
+        body { margin: 0; font-family: Arial, sans-serif; display: flex; background: #f4f6f9; }
+        .sidebar { width: 250px; background: #0f172a; color: white; height: 100vh; display: flex; flex-direction: column; position: fixed; }
+        .sidebar .brand { padding: 20px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #1e293b; }
+        .sidebar .brand span { font-size: 12px; color: #94a3b8; display: block; margin-top: 4px; }
+        .sidebar nav { margin-top: 10px; }
+        .sidebar nav a { padding: 15px 20px; color: #94a3b8; text-decoration: none; display: block; transition: 0.2s; }
+        .sidebar nav a:hover, .sidebar nav a.active { background: #1e293b; color: white; }
+        .main-content { margin-left: 250px; flex: 1; padding: 30px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background: #f8fafc; }
+        select, input, textarea, button { padding: 10px; margin: 5px 0 15px; width: 100%; max-width: 400px; display: block; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1d4ed8; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Report Maintenance Issue</h2>
-        <form id="maintenanceForm">
-            <div class="form-group">
-                <label for="equipment">Equipment:</label>
-                <select id="equipment" required>
-                    <option value="">-- Select Equipment --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="problemDescription">Problem Description:</label>
-                <textarea id="problemDescription" required></textarea>
-            </div>
-            <button type="submit">Submit Request</button>
-        </form>
+    <div class="sidebar">
+        <div class="brand">LabTrack<span>Laboratory Management</span></div>
+        <nav>
+            <a href="#">Dashboard</a>
+            <a href="#">Departments</a>
+            <a href="#">Courses</a>
+            <a href="#">Conflict Logs</a>
+            <a href="#" class="active">Maintenance</a>
+        </nav>
     </div>
 
-    <script>
-        async function loadEquipment() {
-            try {
-                const res = await fetch('http://localhost:3000/api/equipment');
-                const equipmentList = await res.json();
-                const select = document.getElementById('equipment');
-                equipmentList.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = item.name;
-                    select.appendChild(option);
-                });
-            } catch (err) {
-                console.error('Failed to load equipment:', err);
-            }
-        }
+    <div class="main-content">
+        <div class="card">
+            <h2>Maintenance Management</h2>
+            <p>View and report equipment issues.</p>
+        </div>
 
-        document.getElementById('maintenanceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                equipment_id: document.getElementById('equipment').value,
-                description: document.getElementById('problemDescription').value
-            };
+        <div class="card">
+            <h3>Add New Equipment</h3>
+            <form id="equipment-form">
+                <label>Equipment Name:</label>
+                <input type="text" id="equipment_name" placeholder="e.g., Oscilloscope" required>
+                <button type="submit">Save Equipment</button>
+            </form>
+        </div>
 
-            try {
-                const res = await fetch('http://localhost:3000/api/maintenance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    alert('Maintenance request submitted successfully!');
-                    e.target.reset();
-                } else {
-                    alert('Error submitting request.');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-            }
-        });
+        <div class="card">
+            <h3>Report Maintenance Issue</h3>
+            <form id="maintenance-form">
+                <label>Equipment:</label>
+                <select id="equipment_id" required>
+                    <option value="">Loading equipment...</option>
+                </select>
+                
+                <label>Problem Description:</label>
+                <textarea id="reported_problem" rows="4" required></textarea>
+                
+                <button type="submit">Submit Request</button>
+            </form>
+        </div>
 
-        loadEquipment();
-    </script>
+        <div class="card">
+            <h3>Maintenance Records</h3>
+            <table id="maintenance-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Equipment</th>
+                        <th>Problem</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    </script><src="js/app.js"></script>
 </body>
 </html>
