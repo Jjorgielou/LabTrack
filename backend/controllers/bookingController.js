@@ -1,10 +1,9 @@
-
 const {
     getAllBookings,
+    getBookedDates,
     createBooking,
     updateBookingStatus
 } = require("../models/bookingModel");
-
 
 const ok = (res, data, status = 200) => res.status(status).json({
     success: true,
@@ -15,13 +14,12 @@ const ok = (res, data, status = 200) => res.status(status).json({
     }
 });
 
-
 const fail = (res, code, message, status) => res.status(status).json({
     success: false,
     error: { code, message }
 });
 
-
+// GET ALL BOOKINGS
 exports.getAllBookings = async (req, res) => {
     try {
         const user = req.session.user;
@@ -46,12 +44,45 @@ exports.getAllBookings = async (req, res) => {
     }
 };
 
+// GET BOOKED DATES FOR A SELECTED LABORATORY
+exports.getBookedDates = async (req, res) => {
+    try {
+        const { lab_id } = req.query;
 
+        if (
+            !lab_id ||
+            !Number.isInteger(Number(lab_id)) ||
+            Number(lab_id) < 1
+        ) {
+            return fail(
+                res,
+                "INVALID_LAB_ID",
+                "Please provide a valid laboratory ID.",
+                400
+            );
+        }
+
+        const results = await getBookedDates(Number(lab_id));
+
+        return ok(res, results);
+
+    } catch (err) {
+        console.error("Error retrieving booked dates:", err);
+
+        return fail(
+            res,
+            "SERVER_ERROR",
+            "Failed to retrieve booked dates.",
+            500
+        );
+    }
+};
+
+// CREATE BOOKING WITH AUTOMATIC STATUS
 exports.createBooking = async (req, res) => {
     try {
         const {
             lab_id,
-            schedule_id,
             requested_date,
             start_time,
             end_time,
@@ -60,7 +91,6 @@ exports.createBooking = async (req, res) => {
 
         if (
             lab_id === undefined ||
-            schedule_id === undefined ||
             !requested_date ||
             !start_time ||
             !end_time ||
@@ -77,14 +107,12 @@ exports.createBooking = async (req, res) => {
 
         if (
             !Number.isInteger(Number(lab_id)) ||
-            Number(lab_id) < 1 ||
-            !Number.isInteger(Number(schedule_id)) ||
-            Number(schedule_id) < 1
+            Number(lab_id) < 1
         ) {
             return fail(
                 res,
                 "INVALID_ID",
-                "Laboratory ID and schedule ID must be positive integers.",
+                "Laboratory ID must be a positive integer.",
                 400
             );
         }
@@ -151,16 +179,15 @@ exports.createBooking = async (req, res) => {
         const bookingData = {
             requester_id: req.session.user.user_id,
             lab_id: Number(lab_id),
-            schedule_id: Number(schedule_id),
             requested_date,
             start_time: normalizedStart,
             end_time: normalizedEnd,
             purpose: purpose.trim()
         };
 
-        const results = await createBooking(bookingData);
+        const result = await createBooking(bookingData);
 
-        if (results.labNotFound) {
+        if (result.labNotFound) {
             return fail(
                 res,
                 "LAB_NOT_FOUND",
@@ -169,27 +196,12 @@ exports.createBooking = async (req, res) => {
             );
         }
 
-        if (results.invalidSchedule) {
-            return fail(
-                res,
-                "INVALID_SCHEDULE",
-                "The selected schedule does not exist or is unavailable.",
-                400
-            );
-        }
-
-        if (results.conflict) {
-            return fail(
-                res,
-                "BOOKING_CONFLICT",
-                "This laboratory is already booked during that time.",
-                409
-            );
-        }
-
+        // A rejected booking is still saved in the database.
+        // Return its booking ID and actual status to the frontend.
         return ok(res, {
-            booking_id: results.insertId,
-            message: "Booking request created successfully."
+            booking_id: result.booking_id || result.insertId,
+            status: result.status || "Pending",
+            message: result.message || "Booking request created successfully."
         }, 201);
 
     } catch (err) {
@@ -204,13 +216,16 @@ exports.createBooking = async (req, res) => {
     }
 };
 
-
+// UPDATE BOOKING STATUS
 exports.updateBookingStatus = async (req, res) => {
     try {
         const { booking_id } = req.params;
         const { status_id } = req.body;
 
-        if (!Number.isInteger(Number(booking_id)) || Number(booking_id) < 1) {
+        if (
+            !Number.isInteger(Number(booking_id)) ||
+            Number(booking_id) < 1
+        ) {
             return fail(
                 res,
                 "INVALID_BOOKING_ID",
@@ -219,7 +234,10 @@ exports.updateBookingStatus = async (req, res) => {
             );
         }
 
-        if (!Number.isInteger(Number(status_id)) || Number(status_id) < 1) {
+        if (
+            !Number.isInteger(Number(status_id)) ||
+            Number(status_id) < 1
+        ) {
             return fail(
                 res,
                 "INVALID_STATUS",
@@ -229,8 +247,8 @@ exports.updateBookingStatus = async (req, res) => {
         }
 
         const result = await updateBookingStatus(
-            booking_id,
-            status_id
+            Number(booking_id),
+            Number(status_id)
         );
 
         if (result.notFound) {
@@ -261,10 +279,10 @@ exports.updateBookingStatus = async (req, res) => {
         }
 
         if (result.conflict) {
-             return fail(
+            return fail(
                 res,
                 "BOOKING_CONFLICT",
-                "Cannot update this booking because another active booking overlaps with it.",
+                `Cannot update this booking because it overlaps booking ${result.conflicting_booking_id}.`,
                 409
             );
         }
@@ -284,4 +302,3 @@ exports.updateBookingStatus = async (req, res) => {
         );
     }
 };
-

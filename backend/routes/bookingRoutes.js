@@ -13,6 +13,13 @@ router.get(
     bookingController.getAllBookings
 );
 
+router.get(
+    "/booked-dates",
+    requireAuth,
+    requireRole("Admin", "Laboratory Staff", "Student"),
+    bookingController.getBookedDates
+);
+
 router.post(
     "/",
     requireAuth,
@@ -20,10 +27,11 @@ router.post(
     bookingController.createBooking
 );
 
+// Only Admin can manually override a booking status.
 router.patch(
     "/:booking_id/status",
     requireAuth,
-    requireRole("Admin", "Laboratory Staff"),
+    requireRole("Admin"),
     bookingController.updateBookingStatus
 );
 

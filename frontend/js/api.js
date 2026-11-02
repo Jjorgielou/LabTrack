@@ -1,4 +1,3 @@
-
 const API_BASE_URL = "http://127.0.0.1:3000/api";
 
 async function apiRequest(endpoint, options = {}) {
@@ -14,7 +13,12 @@ async function apiRequest(endpoint, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || "Something went wrong.");
+        const errorMessage =
+            data.error?.message ||
+            data.message ||
+            "Something went wrong.";
+
+        throw new Error(errorMessage);
     }
 
     return data;

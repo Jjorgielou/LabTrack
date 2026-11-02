@@ -1,4 +1,3 @@
-
 const pool = require("../config/db");
 
 // GET ALL BOOKINGS
@@ -12,12 +11,9 @@ async function getAllBookings(requesterId = null) {
             l.location AS lab_location,
             bs.status_name
         FROM bookings b
-        LEFT JOIN users u
-            ON b.requester_id = u.user_id
-        LEFT JOIN laboratories l
-            ON b.lab_id = l.lab_id
-        LEFT JOIN booking_statuses bs
-            ON b.status_id = bs.status_id
+        LEFT JOIN users u ON b.requester_id = u.user_id
+        LEFT JOIN laboratories l ON b.lab_id = l.lab_id
+        LEFT JOIN booking_statuses bs ON b.status_id = bs.status_id
     `;
 
     const values = [];
@@ -30,17 +26,20 @@ async function getAllBookings(requesterId = null) {
     query += ` ORDER BY b.created_at DESC`;
 
     const [results] = await pool.query(query, values);
-
     return results;
 }
 
+// GET BOOKED DATES
+// All dates remain selectable. Time conflicts are checked during submission.
+async function getBookedDates(labId) {
+    return [];
+}
 
-// CREATE BOOKING WITH AUTOMATIC CONFLICT LOGGING
+// CREATE BOOKING WITH AUTOMATIC APPROVAL / REJECTION
 async function createBooking(bookingData) {
     const {
         requester_id,
         lab_id,
-        schedule_id,
         requested_date,
         start_time,
         end_time,
@@ -52,7 +51,7 @@ async function createBooking(bookingData) {
     try {
         await connection.beginTransaction();
 
-        // Check and lock laboratory
+        // Lock the laboratory to prevent simultaneous booking requests.
         const [labs] = await connection.query(
             `SELECT lab_id
              FROM laboratories
@@ -66,32 +65,8 @@ async function createBooking(bookingData) {
             return { labNotFound: true };
         }
 
-        // Validate schedule
-        const [schedules] = await connection.query(
-            `SELECT schedule_id
-             FROM schedules
-             WHERE schedule_id = ?
-               AND lab_id = ?
-               AND schedule_date = ?
-               AND is_available = 1
-               AND start_time <= ?
-               AND end_time >= ?
-             FOR UPDATE`,
-            [
-                schedule_id,
-                lab_id,
-                requested_date,
-                start_time,
-                end_time
-            ]
-        );
-
-        if (schedules.length === 0) {
-            await connection.rollback();
-            return { invalidSchedule: true };
-        }
-
-        // Check overlapping Pending or Approved bookings
+        // Check overlapping Pending or Approved bookings.
+        // Non-overlapping bookings on the same date are allowed.
         const [conflicts] = await connection.query(
             `SELECT b.booking_id
              FROM bookings b
@@ -100,16 +75,14 @@ async function createBooking(bookingData) {
              WHERE b.lab_id = ?
                AND b.requested_date = ?
                AND bs.status_name IN ('Pending', 'Approved')
-               AND ? < b.end_time
-               AND ? > b.start_time
+               AND b.start_time < ?
+               AND b.end_time > ?
              FOR UPDATE`,
-            [lab_id, requested_date, start_time, end_time]
+            [lab_id, requested_date, end_time, start_time]
         );
 
+        // Save overlapping booking attempts as Rejected.
         if (conflicts.length > 0) {
-            const existingBookingId = conflicts[0].booking_id;
-
-            // Find Rejected status
             const [rejectedStatuses] = await connection.query(
                 `SELECT status_id
                  FROM booking_statuses
@@ -117,127 +90,142 @@ async function createBooking(bookingData) {
             );
 
             if (rejectedStatuses.length === 0) {
-                throw new Error(
-                    "Rejected booking status was not found."
-                );
+                throw new Error("Rejected booking status was not found.");
             }
 
-            const rejectedStatusId = rejectedStatuses[0].status_id;
+            const conflictingBookingId = conflicts[0].booking_id;
 
-            // Save attempted booking as Rejected
             const [rejectedBooking] = await connection.query(
                 `INSERT INTO bookings
                  (
-                     requester_id,
-                     lab_id,
-                     schedule_id,
-                     requested_date,
-                     start_time,
-                     end_time,
-                     purpose,
-                     status_id
+                     requester_id, lab_id, schedule_id,
+                     requested_date, start_time, end_time,
+                     purpose, status_id
                  )
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, NULL, ?, ?, ?, ?, ?)`,
                 [
                     requester_id,
                     lab_id,
-                    schedule_id,
                     requested_date,
                     start_time,
                     end_time,
                     purpose,
-                    rejectedStatusId
+                    rejectedStatuses[0].status_id
                 ]
             );
 
             const rejectedBookingId = rejectedBooking.insertId;
 
-            // Automatically record the conflict
             await connection.query(
                 `INSERT INTO conflict_logs
                  (
-                     booking_id,
-                     conflict_booking_id,
-                     lab_id,
-                     conflict_type,
-                     description,
-                     conflict_status
+                     booking_id, conflict_booking_id, lab_id,
+                     conflict_type, description, conflict_status
                  )
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [
-                    existingBookingId,
                     rejectedBookingId,
+                    conflictingBookingId,
                     lab_id,
-                    "Booking Overlap",
-                    `Booking ${rejectedBookingId} was rejected because its requested time overlaps with existing booking ${existingBookingId}.`,
+                    "Time Overlap",
+                    `Booking ${rejectedBookingId} was rejected because its requested time overlaps booking ${conflictingBookingId} for laboratory ${lab_id} on ${requested_date}.`,
                     "detected"
                 ]
             );
 
-            // Save rejected booking and conflict record together
             await connection.commit();
 
             return {
                 conflict: true,
-                booking_id: existingBookingId,
-                rejected_booking_id: rejectedBookingId
+                booking_id: rejectedBookingId,
+                conflicting_booking_id: conflictingBookingId,
+                status: "Rejected",
+                message: "Booking rejected because its requested time overlaps an existing booking."
             };
         }
 
-        // Find Pending status
+        // Check schedules for this laboratory and date.
+        const [schedules] = await connection.query(
+            `SELECT schedule_id, start_time, end_time, is_available
+             FROM schedules
+             WHERE lab_id = ?
+               AND schedule_date = ?`,
+            [lab_id, requested_date]
+        );
+
+        let statusName = "Pending";
+        let scheduleId = null;
+
+        if (schedules.length > 0) {
+            // Find an available schedule that fully contains the requested time.
+            const matchingSchedule = schedules.find(schedule =>
+                Number(schedule.is_available) === 1 &&
+                schedule.start_time <= start_time &&
+                schedule.end_time >= end_time
+            );
+
+            if (matchingSchedule) {
+                statusName = "Approved";
+                scheduleId = matchingSchedule.schedule_id;
+            } else {
+                statusName = "Rejected";
+            }
+        }
+
         const [statuses] = await connection.query(
             `SELECT status_id
              FROM booking_statuses
-             WHERE status_name = 'Pending'`
+             WHERE status_name = ?`,
+            [statusName]
         );
 
         if (statuses.length === 0) {
-            throw new Error("Pending booking status was not found.");
+            throw new Error(`${statusName} booking status was not found.`);
         }
 
-        const pendingStatusId = statuses[0].status_id;
-
-        // Create normal booking
+        // Insert the booking with its automatically determined status.
         const [result] = await connection.query(
             `INSERT INTO bookings
              (
-                 requester_id,
-                 lab_id,
-                 schedule_id,
-                 requested_date,
-                 start_time,
-                 end_time,
-                 purpose,
-                 status_id
+                 requester_id, lab_id, schedule_id,
+                 requested_date, start_time, end_time,
+                 purpose, status_id
              )
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 requester_id,
                 lab_id,
-                schedule_id,
+                scheduleId,
                 requested_date,
                 start_time,
                 end_time,
                 purpose,
-                pendingStatusId
+                statuses[0].status_id
             ]
         );
 
         await connection.commit();
 
-        return result;
+        return {
+            ...result,
+            status: statusName,
+            message:
+                statusName === "Approved"
+                    ? "Booking automatically approved because it fits an available schedule."
+                    : statusName === "Rejected"
+                        ? "Booking rejected because the requested time does not fit an available schedule."
+                        : "Booking submitted for Admin review because no schedule exists for this date."
+        };
 
     } catch (error) {
         await connection.rollback();
         throw error;
-
     } finally {
         connection.release();
     }
 }
 
-
-// UPDATE BOOKING STATUS
+// UPDATE BOOKING STATUS (ADMIN OVERRIDE)
 async function updateBookingStatus(booking_id, status_id) {
     const connection = await pool.getConnection();
 
@@ -256,14 +244,15 @@ async function updateBookingStatus(booking_id, status_id) {
             return { notFound: true };
         }
 
-        const lab_id = initialBookings[0].lab_id;
+        const labId = initialBookings[0].lab_id;
 
+        // Lock the laboratory before checking for conflicts.
         const [labs] = await connection.query(
             `SELECT lab_id
              FROM laboratories
              WHERE lab_id = ?
              FOR UPDATE`,
-            [lab_id]
+            [labId]
         );
 
         if (labs.length === 0) {
@@ -278,11 +267,6 @@ async function updateBookingStatus(booking_id, status_id) {
              FOR UPDATE`,
             [booking_id]
         );
-
-        if (bookings.length === 0) {
-            await connection.rollback();
-            return { notFound: true };
-        }
 
         const [statuses] = await connection.query(
             `SELECT status_id, status_name
@@ -299,6 +283,7 @@ async function updateBookingStatus(booking_id, status_id) {
         const booking = bookings[0];
         const status = statuses[0];
 
+        // Pending or Approved bookings cannot overlap another active booking.
         if (
             status.status_name === "Pending" ||
             status.status_name === "Approved"
@@ -312,38 +297,34 @@ async function updateBookingStatus(booking_id, status_id) {
                    AND b.requested_date = ?
                    AND b.booking_id != ?
                    AND bs.status_name IN ('Pending', 'Approved')
-                   AND ? < b.end_time
-                   AND ? > b.start_time`,
+                   AND b.start_time < ?
+                   AND b.end_time > ?
+                 FOR UPDATE`,
                 [
                     booking.lab_id,
                     booking.requested_date,
                     booking_id,
-                    booking.start_time,
-                    booking.end_time
+                    booking.end_time,
+                    booking.start_time
                 ]
             );
 
             if (conflicts.length > 0) {
                 const conflictingBookingId = conflicts[0].booking_id;
 
-                // Automatically record status-update conflict
                 await connection.query(
                     `INSERT INTO conflict_logs
                      (
-                         booking_id,
-                         conflict_booking_id,
-                         lab_id,
-                         conflict_type,
-                         description,
-                         conflict_status
+                         booking_id, conflict_booking_id, lab_id,
+                         conflict_type, description, conflict_status
                      )
                      VALUES (?, ?, ?, ?, ?, ?)`,
                     [
                         booking_id,
                         conflictingBookingId,
                         booking.lab_id,
-                        "Booking Status Conflict",
-                        `Booking ${booking_id} could not be changed to ${status.status_name} because it overlaps with booking ${conflictingBookingId}.`,
+                        "Status Update Time Overlap",
+                        `Booking ${booking_id} could not be changed to ${status.status_name} because it overlaps booking ${conflictingBookingId}.`,
                         "detected"
                     ]
                 );
@@ -365,21 +346,19 @@ async function updateBookingStatus(booking_id, status_id) {
         );
 
         await connection.commit();
-
         return result;
 
     } catch (error) {
         await connection.rollback();
         throw error;
-
     } finally {
         connection.release();
     }
 }
 
-
 module.exports = {
     getAllBookings,
+    getBookedDates,
     createBooking,
     updateBookingStatus
 };
