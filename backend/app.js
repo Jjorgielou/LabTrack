@@ -10,6 +10,7 @@ const userRoutes = require("./routes/users");
 const labRoutes = require("./routes/laboratories");
 const authRoutes = require("./routes/auth");
 const auditLogRoutes = require("./routes/auditLogs");
+const conflictRoutes = require("./routes/conflictRoutes");
 
 const requireAuth = require("./middleware/requireAuth");
 const requireRole = require("./middleware/requireRole");
@@ -46,6 +47,7 @@ app.use("/api/laboratories", labRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.get("/api/dashboard/stats", requireAuth, requireRole("Admin"), dashboardController.getDashboardStats);
+app.use("/api/conflicts", conflictRoutes);
 
 // Welcome Route
 app.get("/", (req, res) => {

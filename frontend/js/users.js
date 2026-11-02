@@ -94,46 +94,54 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         tableBody.innerHTML = userList.map(user => {
-            const roleIds = {
-                "Admin": 1,
-                "Laboratory Staff": 2,
-                "Student": 3
-            };
-
             return `
                 <tr>
                     <td>${escapeHTML(user.user_id)}</td>
                     <td>${escapeHTML(user.first_name)} ${escapeHTML(user.last_name)}</td>
                     <td>${escapeHTML(user.email)}</td>
                     <td>
-                        <select class="role-select" data-role-select="${Number(user.user_id)}">
-                            <option value="1" ${user.role_name === "Admin" ? "selected" : ""}>Admin</option>
-                            <option value="2" ${user.role_name === "Laboratory Staff" ? "selected" : ""}>Laboratory Staff</option>
-                            <option value="3" ${user.role_name === "Student" ? "selected" : ""}>Student</option>
+                        <select
+                            class="role-select"
+                            data-role-select="${Number(user.user_id)}"
+                        >
+                            <option value="1" ${user.role_name === "Admin" ? "selected" : ""}>
+                                Admin
+                            </option>
+                            <option value="2" ${user.role_name === "Laboratory Staff" ? "selected" : ""}>
+                                Laboratory Staff
+                            </option>
+                            <option value="3" ${user.role_name === "Student" ? "selected" : ""}>
+                                Student
+                            </option>
                         </select>
                     </td>
-                    <td>${user.created_at
-                        ? new Date(user.created_at).toLocaleDateString()
-                        : "N/A"}</td>
+                    <td>
+                        ${user.created_at
+                            ? new Date(user.created_at).toLocaleDateString()
+                            : "N/A"}
+                    </td>
                     <td>
                         <button
                             class="btn-edit"
                             data-action="edit"
-                            data-id="${Number(user.user_id)}">
+                            data-id="${Number(user.user_id)}"
+                        >
                             Edit
                         </button>
 
                         <button
                             class="btn-delete"
                             data-action="delete"
-                            data-id="${Number(user.user_id)}">
+                            data-id="${Number(user.user_id)}"
+                        >
                             Delete
                         </button>
 
                         <button
                             class="btn-role"
                             data-action="change-role"
-                            data-id="${Number(user.user_id)}">
+                            data-id="${Number(user.user_id)}"
+                        >
                             Save Role
                         </button>
                     </td>
@@ -168,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayUsers(filteredUsers);
     });
 
-    // Handle Edit and Delete buttons
+    // Handle Edit, Delete, and Change Role buttons
     tableBody.addEventListener("click", async (event) => {
         const button = event.target.closest("button[data-action]");
 
@@ -176,17 +184,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const userId = Number(button.dataset.id);
         const action = button.dataset.action;
-        
+
+        // Find the selected user before using their information
+        const selectedUser = users.find(
+            user => Number(user.user_id) === userId
+        );
+
+        if (!selectedUser) return;
+
         // Change user role
         if (action === "change-role") {
             const roleSelect = tableBody.querySelector(
                 `[data-role-select="${userId}"]`
             );
 
+            if (!roleSelect) return;
+
             const newRoleId = Number(roleSelect.value);
+            const newRoleName =
+                roleSelect.options[roleSelect.selectedIndex].text.trim();
 
             const confirmed = confirm(
-                `Change ${selectedUser.first_name}'s role to ${roleSelect.options[roleSelect.selectedIndex].text}?`
+                `Change ${selectedUser.first_name}'s role to ${newRoleName}?`
             );
 
             if (!confirmed) return;
@@ -217,12 +236,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const selectedUser = users.find(
-            user => Number(user.user_id) === userId
-        );
-
-        if (!selectedUser) return;
-
+        // Edit user
         if (action === "edit") {
             editUserId.value = selectedUser.user_id;
             editFirstName.value = selectedUser.first_name;
@@ -238,6 +252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
 
+        // Delete user
         if (action === "delete") {
             const confirmed = confirm(
                 `Are you sure you want to delete ${selectedUser.first_name} ${selectedUser.last_name}?`
