@@ -154,7 +154,7 @@ async function deleteEquipment(req, res) {
     try {
         const result = await equipmentModel.deleteEquipment(id);
         if (result.affectedRows === 0) return fail(res, "NOT_FOUND", "Equipment not found.", 404);
-        res.status(204).send();
+         ok(res, { deleted: true });
     } catch (err) {
         handleDbError(res, err);
     }
