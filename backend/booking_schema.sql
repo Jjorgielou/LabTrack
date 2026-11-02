@@ -41,3 +41,9 @@ CREATE TABLE IF NOT EXISTS `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+INSERT IGNORE INTO booking_statuses (status_id, status_name)
+VALUES
+    (1, 'Pending'),
+    (2, 'Approved'),
+    (3, 'Rejected'),
+    (4, 'Cancelled');
