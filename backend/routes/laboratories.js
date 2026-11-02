@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const ctrl = require('../controllers/laboratoryController');
-
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 
-//Public Routes (all authenticated roles can read)
-router.get('/', requireAuth, ctrl.getAllLabs);
-router.get('/unavailable', requireAuth, ctrl.getUnavailableLabs);
-router.get('/:id', requireAuth, ctrl.getLabById);
+router.use(requireAuth);
 
-//Protected Routes (Admin + Laboratory Staff only)
-router.post('/', requireAuth, requireRole('Admin', 'Laboratory Staff'), ctrl.createLab);
-router.put('/:id', requireAuth, requireRole('Admin', 'Laboratory Staff'), ctrl.updateLab);
+router.get('/', requireRole('Admin', 'Laboratory Staff', 'Student'), ctrl.getAllLabs);
+router.get('/unavailable', requireRole('Admin', 'Laboratory Staff', 'Student'), ctrl.getUnavailableLabs);
+router.get('/:id', requireRole('Admin', 'Laboratory Staff', 'Student'), ctrl.getLabById);
 
-//Admin Only Routes
-router.delete('/:id', requireAuth, requireRole('Admin'), ctrl.deleteLab);
+router.post('/', requireRole('Admin', 'Laboratory Staff'), ctrl.createLab);
+router.put('/:id', requireRole('Admin', 'Laboratory Staff'), ctrl.updateLab);
+
+router.delete('/:id', requireRole('Admin'), ctrl.deleteLab);
 
 module.exports = router;

@@ -1,139 +1,144 @@
-const labModel = require('../models/laboratoryModel');
+// backend/controllers/laboratoryController.js
 
-const ok = (res, data, status = 200) => {
-  res.status(status).json({ success: true, data });
+const Lab = require('../models/laboratoryModel');
+
+const ok = (res, data, status = 200) => res.status(status).json({
+  success: true,
+  data,
+  meta: {
+    timestamp: new Date().toISOString(),
+    count: Array.isArray(data) ? data.length : 1
+  }
+});
+
+const fail = (res, code, message, status) =>
+  res.status(status).json({ success: false, error: { code, message } });
+
+const serverError = (res, err) => {
+  console.error('[laboratories]', err);
+  return fail(res, 'SERVER_ERROR', 'An unexpected server error occurred.', 500);
 };
 
-const fail = (res, msg, status = 500) => {
-  res.status(status).json({ success: false, error: { message: msg } });
-};
+const isPositiveInt = (v) => Number.isInteger(Number(v)) && Number(v) > 0;
 
-const validate = (body) => {
-  const { lab_name, location, capacity, type_id, status_id } = body;
+const isValidIdParam = (v) => /^\d+$/.test(String(v)) && Number(v) > 0;
 
-  if (!lab_name || !location || capacity == null || type_id == null || status_id == null) {
-    return 'Missing required fields: lab_name, location, capacity, type_id, status_id';
-  }
-
-  if (!Number.isInteger(capacity) || capacity <= 0) {
-    return 'Capacity must be a positive integer';
-  }
-
-  if (!Number.isInteger(type_id) || type_id <= 0) {
-    return 'type_id must be a positive integer';
-  }
-
-  if (!Number.isInteger(status_id) || status_id <= 0) {
-    return 'status_id must be a positive integer';
-  }
-
+const validatePayload = ({ lab_name, location, capacity, type_id, status_id }) => {
+  if (!lab_name || typeof lab_name !== 'string' || !lab_name.trim())
+    return 'lab_name is required.';
+  if (!location || typeof location !== 'string' || !location.trim())
+    return 'location is required.';
+  if (capacity === undefined || capacity === null || !isPositiveInt(capacity))
+    return 'capacity must be a positive integer.';
+  if (!isPositiveInt(type_id))
+    return 'type_id must be a positive integer.';
+  if (!isPositiveInt(status_id))
+    return 'status_id must be a positive integer.';
   return null;
 };
 
-exports.getAllLabs = async (req, res) => {
+exports.getAllLabs = async (_req, res) => {
   try {
-    const labs = await labModel.getAllLabs();
-    ok(res, labs);
+    ok(res, await Lab.getAllLabs());
   } catch (err) {
-    console.error('Error fetching labs:', err);
-    fail(res, 'Failed to fetch laboratories', 500);
+    serverError(res, err);
   }
 };
 
-exports.getUnavailableLabs = async (req, res) => {
+exports.getUnavailableLabs = async (_req, res) => {
   try {
-    const labs = await labModel.getUnavailableLabs();
-    ok(res, labs);
+    ok(res, await Lab.getUnavailableLabs());
   } catch (err) {
-    console.error('Error fetching unavailable labs:', err);
-    fail(res, 'Failed to fetch unavailable laboratories', 500);
+    serverError(res, err);
   }
 };
 
 exports.getLabById = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return fail(res, 'Invalid laboratory ID', 400);
-    }
+    if (!isValidIdParam(req.params.id))
+      return fail(res, 'BAD_REQUEST', 'Invalid laboratory ID.', 400);
 
-    const lab = await labModel.getLabById(id);
-    if (!lab) return fail(res, 'Laboratory not found', 404);
+    const lab = await Lab.getLabById(req.params.id);
+    if (!lab) return fail(res, 'NOT_FOUND', 'Laboratory not found.', 404);
     ok(res, lab);
   } catch (err) {
-    console.error('Error fetching lab by ID:', err);
-    fail(res, 'Failed to fetch laboratory', 500);
+    serverError(res, err);
   }
 };
 
 exports.createLab = async (req, res) => {
-  const validationError = validate(req.body);
-  if (validationError) {
-    return fail(res, validationError, 400);
-  }
-
   try {
-    if (await labModel.existsByName(req.body.lab_name)) {
-      return fail(res, 'Laboratory with this name already exists', 409);
-    }
+    const problem = validatePayload(req.body);
+    if (problem) return fail(res, 'BAD_REQUEST', problem, 400);
 
-    const fkCheck = await labModel.validateForeignKeys(req.body.type_id, req.body.status_id);
-    if (!fkCheck.valid) {
-      return fail(res, fkCheck.message, 400);
-    }
+    const { lab_name, location, capacity, type_id, status_id } = req.body;
 
-    const lab = await labModel.createLab(req.body);
-    ok(res, lab, 201);
+    const fk = await Lab.validateForeignKeys(type_id, status_id);
+    if (!fk.valid) return fail(res, 'BAD_REQUEST', fk.message, 400);
+
+    if (await Lab.existsByName(lab_name.trim()))
+      return fail(res, 'CONFLICT', 'A laboratory with that name already exists.', 409);
+
+    const created = await Lab.createLab({
+      lab_name: lab_name.trim(),
+      location: location.trim(),
+      capacity: Number(capacity),
+      type_id: Number(type_id),
+      status_id: Number(status_id)
+    });
+
+    ok(res, created, 201);
   } catch (err) {
-    console.error('Error creating laboratory:', err);
-    fail(res, 'Failed to create laboratory', 500);
+    if (err.code === 'ER_DUP_ENTRY')
+      return fail(res, 'CONFLICT', 'A laboratory with that name already exists.', 409);
+    serverError(res, err);
   }
 };
 
 exports.updateLab = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return fail(res, 'Invalid laboratory ID', 400);
-    }
+    if (!isValidIdParam(req.params.id))
+      return fail(res, 'BAD_REQUEST', 'Invalid laboratory ID.', 400);
 
-    const validationError = validate(req.body);
-    if (validationError) {
-      return fail(res, validationError, 400);
-    }
+    const problem = validatePayload(req.body);
+    if (problem) return fail(res, 'BAD_REQUEST', problem, 400);
 
-    if (await labModel.existsByName(req.body.lab_name, id)) {
-      return fail(res, 'Laboratory with this name already exists', 409);
-    }
+    const { lab_name, location, capacity, type_id, status_id } = req.body;
 
-    const fkCheck = await labModel.validateForeignKeys(req.body.type_id, req.body.status_id);
-    if (!fkCheck.valid) {
-      return fail(res, fkCheck.message, 400);
-    }
+    const fk = await Lab.validateForeignKeys(type_id, status_id);
+    if (!fk.valid) return fail(res, 'BAD_REQUEST', fk.message, 400);
 
-    const updated = await labModel.updateLab(id, req.body);
-    if (!updated) return fail(res, 'Laboratory not found', 404);
+    if (await Lab.existsByName(lab_name.trim(), req.params.id))
+      return fail(res, 'CONFLICT', 'Another laboratory already uses that name.', 409);
 
-    ok(res, updated, 200);
+    const updated = await Lab.updateLab(req.params.id, {
+      lab_name: lab_name.trim(),
+      location: location.trim(),
+      capacity: Number(capacity),
+      type_id: Number(type_id),
+      status_id: Number(status_id)
+    });
+
+    if (!updated) return fail(res, 'NOT_FOUND', 'Laboratory not found.', 404);
+    ok(res, updated);
   } catch (err) {
-    console.error('Error updating laboratory:', err);
-    fail(res, 'Failed to update laboratory', 500);
+    if (err.code === 'ER_DUP_ENTRY')
+      return fail(res, 'CONFLICT', 'Another laboratory already uses that name.', 409);
+    serverError(res, err);
   }
 };
 
 exports.deleteLab = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id) || id <= 0) {
-      return fail(res, 'Invalid laboratory ID', 400);
-    }
+    if (!isValidIdParam(req.params.id))
+      return fail(res, 'BAD_REQUEST', 'Invalid laboratory ID.', 400);
 
-    const deleted = await labModel.deleteLab(id);
-    if (!deleted) return fail(res, 'Laboratory not found', 404);
-
-    ok(res, { lab_id: id, deleted: true }, 200);
+    const deleted = await Lab.deleteLab(req.params.id);
+    if (!deleted) return fail(res, 'NOT_FOUND', 'Laboratory not found.', 404);
+    res.status(204).send();
   } catch (err) {
-    console.error('Error deleting laboratory:', err);
-    fail(res, 'Failed to delete laboratory', 500);
+    if (err.code === 'ER_ROW_IS_REFERENCED_2')
+      return fail(res, 'CONFLICT', 'This laboratory has related records and cannot be deleted.', 409);
+    serverError(res, err);
   }
 };
