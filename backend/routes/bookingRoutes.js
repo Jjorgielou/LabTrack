@@ -1,10 +1,30 @@
-
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const bookingController = require('../controllers/bookingController');
+const bookingController = require("../controllers/bookingController");
 
-router.get('/', bookingController.getAllBookings);
-router.post('/', bookingController.createBooking);
+const requireAuth = require("../middleware/requireAuth");
+const requireRole = require("../middleware/requireRole");
+
+router.get(
+    "/",
+    requireAuth,
+    requireRole("Admin", "Laboratory Staff", "Student"),
+    bookingController.getAllBookings
+);
+
+router.post(
+    "/",
+    requireAuth,
+    requireRole("Admin", "Laboratory Staff", "Student"),
+    bookingController.createBooking
+);
+
+router.patch(
+    "/:booking_id/status",
+    requireAuth,
+    requireRole("Admin", "Laboratory Staff"),
+    bookingController.updateBookingStatus
+);
 
 module.exports = router;
