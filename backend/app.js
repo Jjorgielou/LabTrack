@@ -1,4 +1,3 @@
-
 const express = require("express");
 require("dotenv").config();
 
@@ -12,9 +11,14 @@ const userRoutes = require("./routes/users");
 const labRoutes = require("./routes/laboratories");
 const authRoutes = require("./routes/auth");
 const auditLogRoutes = require("./routes/auditLogs");
+
 const conflictRoutes = require("./routes/conflictRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
+
+const equipmentRoutes = require("./routes/equipment");
+const equipmentCategoryRoutes = require("./routes/equipmentCategories");
+const maintenanceRoutes = require("./routes/maintenanceroutes");
 
 // Middleware imports
 const requireAuth = require("./middleware/requireAuth");
@@ -63,6 +67,10 @@ app.get(
 app.use("/api/conflicts", conflictRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/schedules", scheduleRoutes);
+
+app.use("/api/equipment", equipmentRoutes);
+app.use("/api/equipment-categories", equipmentCategoryRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
 
 // Welcome Route
 app.get("/", (req, res) => {
