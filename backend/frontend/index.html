@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LabTrack - Maintenance</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 { margin-top: 0; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        select, textarea, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; height: 100px; }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { background-color: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Report Maintenance Issue</h2>
+        <form id="maintenanceForm">
+            <div class="form-group">
+                <label for="equipment">Equipment:</label>
+                <select id="equipment" required>
+                    <option value="">-- Select Equipment --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="problemDescription">Problem Description:</label>
+                <textarea id="problemDescription" required></textarea>
+            </div>
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
+
+    <script>
+        async function loadEquipment() {
+            try {
+                const res = await fetch('http://localhost:3000/api/equipment');
+                const equipmentList = await res.json();
+                const select = document.getElementById('equipment');
+                equipmentList.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Failed to load equipment:', err);
+            }
+        }
+
+        document.getElementById('maintenanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                equipment_id: document.getElementById('equipment').value,
+                description: document.getElementById('problemDescription').value
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/maintenance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert('Maintenance request submitted successfully!');
+                    e.target.reset();
+                } else {
+                    alert('Error submitting request.');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        });
+
+        loadEquipment();
+    </script>
+</body>
+</html>

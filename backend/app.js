@@ -1,18 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-
 const maintenanceRoutes = require('./routes/maintenance');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
 
-// Mount the routes
-app.use('/api/maintenance', maintenanceRoutes);
-console.log('✓ Mounted /api/maintenance route successfully');
+// API Routes
+app.use('/api', maintenanceRoutes);
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`LabTrack server is running at http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
