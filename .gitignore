@@ -14,3 +14,4 @@ desktop.ini
 .temp
 backend/node_modules/
 backend/.env
+node_modules
