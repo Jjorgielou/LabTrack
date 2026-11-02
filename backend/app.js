@@ -6,15 +6,21 @@ const session = require("express-session");
 const cors = require("cors");
 
 const db = require("./config/db");
+
+// Route imports
 const userRoutes = require("./routes/users");
 const labRoutes = require("./routes/laboratories");
 const authRoutes = require("./routes/auth");
 const auditLogRoutes = require("./routes/auditLogs");
 const conflictRoutes = require("./routes/conflictRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 
+// Middleware imports
 const requireAuth = require("./middleware/requireAuth");
 const requireRole = require("./middleware/requireRole");
 
+// Controller imports
 const dashboardController = require("./controllers/dashboardController");
 
 const app = express();
@@ -46,8 +52,17 @@ app.use("/api/auth", authRoutes);
 app.use("/api/laboratories", labRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
-app.get("/api/dashboard/stats", requireAuth, requireRole("Admin"), dashboardController.getDashboardStats);
+
+app.get(
+    "/api/dashboard/stats",
+    requireAuth,
+    requireRole("Admin"),
+    dashboardController.getDashboardStats
+);
+
 app.use("/api/conflicts", conflictRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/schedules", scheduleRoutes);
 
 // Welcome Route
 app.get("/", (req, res) => {
