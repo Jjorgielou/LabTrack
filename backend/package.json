@@ -6,17 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-<<<<<<< HEAD
-=======
     "bcrypt": "^6.0.0",
->>>>>>> d34390318c14031c125a5f60157193d9b5718c4e
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
