@@ -48,13 +48,13 @@
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Requests</h2>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Report Issue</button>
+                    <button onclick="openCreateModal('issueModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Report Issue</button>
                 </div>
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
                             <th class="py-3 px-4">ID</th>
-                            <th class="py-3 px-4">Equipment</th>
+                            <th class="py-3 px-4">Equipment ID</th>
                             <th class="py-3 px-4">Problem Description</th>
                             <th class="py-3 px-4">Status</th>
                             <th class="py-3 px-4">Actions</th>
@@ -68,7 +68,7 @@
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Records</h2>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Log Work</button>
+                    <button onclick="openCreateModal('recordModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Log Work</button>
                 </div>
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -88,7 +88,7 @@
             <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Statuses</h2>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Status</button>
+                    <button onclick="openCreateModal('statusModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Status</button>
                 </div>
                 <table class="w-full text-left border-collapse">
                     <thead>
@@ -105,50 +105,128 @@
         </div>
     </main>
 
+    <!-- Report/Edit Issue Modal -->
+    <div id="issueModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h3 id="issueModalTitle" class="text-lg font-bold mb-4">Report Equipment Issue</h3>
+            <form id="issueForm" onsubmit="submitIssue(event)" class="space-y-4">
+                <input type="hidden" id="edit_issue_id">
+                <div id="equipment_id_container">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Equipment ID</label>
+                    <input type="number" id="equipment_id" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Problem Description</label>
+                    <textarea id="description" required rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+                </div>
+                <div id="status_container" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status</label>
+                    <input type="text" id="issue_status" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="toggleModal('issueModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Log/Edit Work Modal -->
+    <div id="recordModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h3 id="recordModalTitle" class="text-lg font-bold mb-4">Log Maintenance Work</h3>
+            <form id="recordForm" onsubmit="submitRecord(event)" class="space-y-4">
+                <input type="hidden" id="edit_record_id">
+                <div id="rec_request_id_container">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Request ID</label>
+                    <input type="number" id="rec_request_id" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Work Performed</label>
+                    <textarea id="work_performed" required rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Technician</label>
+                    <input type="text" id="technician" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="toggleModal('recordModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Status Modal -->
+    <div id="statusModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h3 id="statusModalTitle" class="text-lg font-bold mb-4">Add Maintenance Status</h3>
+            <form id="statusForm" onsubmit="submitStatus(event)" class="space-y-4">
+                <input type="hidden" id="edit_status_id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status Name</label>
+                    <input type="text" id="status_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description</label>
+                    <textarea id="status_description" rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="toggleModal('statusModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_BASE = 'http://localhost:3000/api/maintenance';
+
+        let requestsData = [];
+        let recordsData = [];
+        let statusesData = [];
 
         async function loadMaintenanceData() {
             try {
                 const reqRes = await fetch(`${API_BASE}/requests`);
-                const requests = await reqRes.json();
-                document.querySelector('section:nth-of-type(1) tbody').innerHTML = requests.map(r => `
+                requestsData = await reqRes.json();
+                document.querySelector('section:nth-of-type(1) tbody').innerHTML = requestsData.map(r => `
                     <tr>
                         <td class="py-3 px-4 font-medium">${r.id}</td>
-                        <td class="py-3 px-4">${r.equipment_name || 'N/A'}</td>
+                        <td class="py-3 px-4">${r.equipment_id}</td>
                         <td class="py-3 px-4">${r.description}</td>
                         <td class="py-3 px-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-semibold">${r.status}</span></td>
                         <td class="py-3 px-4 space-x-2">
-                            <button onclick="editItem('requests', ${r.id})" class="text-blue-600 hover:underline">Edit</button>
+                            <button onclick="openEditModal('requests', ${r.id})" class="text-blue-600 hover:underline">Edit</button>
                             <button onclick="deleteItem('requests', ${r.id})" class="text-red-600 hover:underline">Delete</button>
                         </td>
                     </tr>
                 `).join('');
 
                 const recRes = await fetch(`${API_BASE}/records`);
-                const records = await recRes.json();
-                document.querySelector('section:nth-of-type(2) tbody').innerHTML = records.map(rc => `
+                recordsData = await recRes.json();
+                document.querySelector('section:nth-of-type(2) tbody').innerHTML = recordsData.map(rc => `
                     <tr>
                         <td class="py-3 px-4 font-medium">${rc.id}</td>
                         <td class="py-3 px-4">#${rc.request_id}</td>
                         <td class="py-3 px-4">${rc.work_performed}</td>
                         <td class="py-3 px-4">${rc.technician}</td>
                         <td class="py-3 px-4 space-x-2">
-                            <button onclick="editItem('records', ${rc.id})" class="text-blue-600 hover:underline">Edit</button>
+                            <button onclick="openEditModal('records', ${rc.id})" class="text-blue-600 hover:underline">Edit</button>
                             <button onclick="deleteItem('records', ${rc.id})" class="text-red-600 hover:underline">Delete</button>
                         </td>
                     </tr>
                 `).join('');
 
                 const statRes = await fetch(`${API_BASE}/statuses`);
-                const statuses = await statRes.json();
-                document.querySelector('section:nth-of-type(3) tbody').innerHTML = statuses.map(s => `
+                statusesData = await statRes.json();
+                document.querySelector('section:nth-of-type(3) tbody').innerHTML = statusesData.map(s => `
                     <tr>
                         <td class="py-3 px-4 font-medium">${s.id}</td>
                         <td class="py-3 px-4 font-semibold text-amber-600">${s.name}</td>
                         <td class="py-3 px-4">${s.description || ''}</td>
                         <td class="py-3 px-4 space-x-2">
-                            <button onclick="editItem('statuses', ${s.id})" class="text-blue-600 hover:underline">Edit</button>
+                            <button onclick="openEditModal('statuses', ${s.id})" class="text-blue-600 hover:underline">Edit</button>
                             <button onclick="deleteItem('statuses', ${s.id})" class="text-red-600 hover:underline">Delete</button>
                         </td>
                     </tr>
@@ -159,18 +237,158 @@
             }
         }
 
+        function toggleModal(modalId, show) {
+            document.getElementById(modalId).classList.toggle('hidden', !show);
+        }
+
+        function openCreateModal(modalId) {
+            if (modalId === 'issueModal') {
+                document.getElementById('issueModalTitle').innerText = 'Report Equipment Issue';
+                document.getElementById('edit_issue_id').value = '';
+                document.getElementById('issueForm').reset();
+                document.getElementById('equipment_id_container').style.display = 'block';
+                document.getElementById('status_container').style.display = 'none';
+            } else if (modalId === 'recordModal') {
+                document.getElementById('recordModalTitle').innerText = 'Log Maintenance Work';
+                document.getElementById('edit_record_id').value = '';
+                document.getElementById('recordForm').reset();
+                document.getElementById('rec_request_id_container').style.display = 'block';
+            } else if (modalId === 'statusModal') {
+                document.getElementById('statusModalTitle').innerText = 'Add Maintenance Status';
+                document.getElementById('edit_status_id').value = '';
+                document.getElementById('statusForm').reset();
+            }
+            toggleModal(modalId, true);
+        }
+
+        function openEditModal(type, id) {
+            if (type === 'requests') {
+                const item = requestsData.find(r => r.id === id);
+                if (!item) return;
+                document.getElementById('issueModalTitle').innerText = 'Edit Maintenance Request';
+                document.getElementById('edit_issue_id').value = item.id;
+                document.getElementById('description').value = item.description;
+                document.getElementById('issue_status').value = item.status;
+                document.getElementById('equipment_id_container').style.display = 'none';
+                document.getElementById('status_container').style.display = 'block';
+                toggleModal('issueModal', true);
+            } else if (type === 'records') {
+                const item = recordsData.find(r => r.id === id);
+                if (!item) return;
+                document.getElementById('recordModalTitle').innerText = 'Edit Maintenance Record';
+                document.getElementById('edit_record_id').value = item.id;
+                document.getElementById('work_performed').value = item.work_performed;
+                document.getElementById('technician').value = item.technician;
+                document.getElementById('rec_request_id_container').style.display = 'none';
+                toggleModal('recordModal', true);
+            } else if (type === 'statuses') {
+                const item = statusesData.find(s => s.id === id);
+                if (!item) return;
+                document.getElementById('statusModalTitle').innerText = 'Edit Maintenance Status';
+                document.getElementById('edit_status_id').value = item.id;
+                document.getElementById('status_name').value = item.name;
+                document.getElementById('status_description').value = item.description || '';
+                toggleModal('statusModal', true);
+            }
+        }
+
+        async function submitIssue(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_issue_id').value;
+            
+            if (id) {
+                const description = document.getElementById('description').value;
+                const status = document.getElementById('issue_status').value;
+                await fetch(`${API_BASE}/requests/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description, status })
+                });
+            } else {
+                const data = {
+                    equipment_id: document.getElementById('equipment_id').value,
+                    description: document.getElementById('description').value
+                };
+                await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            toggleModal('issueModal', false);
+            loadMaintenanceData();
+        }
+
+        async function submitRecord(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_record_id').value;
+
+            if (id) {
+                const work_performed = document.getElementById('work_performed').value;
+                const technician = document.getElementById('technician').value;
+                await fetch(`${API_BASE}/records/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ work_performed, technician })
+                });
+            } else {
+                const data = {
+                    request_id: document.getElementById('rec_request_id').value,
+                    work_performed: document.getElementById('work_performed').value,
+                    technician: document.getElementById('technician').value
+                };
+                await fetch(`${API_BASE}/records`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            toggleModal('recordModal', false);
+            loadMaintenanceData();
+        }
+
+        async function submitStatus(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_status_id').value;
+
+            if (id) {
+                const name = document.getElementById('status_name').value;
+                const description = document.getElementById('status_description').value;
+                await fetch(`${API_BASE}/statuses/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+            } else {
+                const data = {
+                    name: document.getElementById('status_name').value,
+                    description: document.getElementById('status_description').value
+                };
+                await fetch(`${API_BASE}/statuses`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            }
+
+            toggleModal('statusModal', false);
+            loadMaintenanceData();
+        }
+
         function deleteItem(type, id) {
-            if (confirm(`Are you sure you want to delete this ${type} item?`)) {
-                fetch(`${API_BASE}/${type}/${id}`, { method: 'DELETE' })
+            if (confirm(`Are you sure you want to delete ${type} ID ${id}?`)) {
+                let endpoint = `${API_BASE}/${id}`;
+                if (type === 'records') endpoint = `${API_BASE}/records/${id}`;
+                if (type === 'statuses') endpoint = `${API_BASE}/statuses/${id}`;
+
+                fetch(endpoint, { method: 'DELETE' })
                     .then(() => loadMaintenanceData());
             }
         }
 
-        function editItem(type, id) {
-            alert(`Edit functionality for ${type} ID ${id}`);
-        }
-
-        loadMaintenanceData();
+        document.addEventListener('DOMContentLoaded', loadMaintenanceData);
     </script>
 </body>
 </html>
