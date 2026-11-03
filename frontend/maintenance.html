@@ -6,40 +6,44 @@
     <title>Maintenance Module - LabTrack</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="bg-slate-50 min-h-screen flex">
+<body class="dashboard-page">
+    <div class="dashboard-layout">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-[#112240] text-slate-300 flex flex-col justify-between min-h-screen fixed left-0 top-0">
+    <aside class="sidebar">
         <div>
-            <div class="p-6 flex items-center space-x-3">
-                <span class="bg-blue-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-sm">LT</span>
-                <span class="text-white font-bold text-lg tracking-wide">LabTrack</span>
+            <div class="sidebar-brand">
+                <div class="brand-logo">LT</div>
+                <h2>LabTrack</h2>
             </div>
-            <nav class="mt-4 px-4 space-y-1 text-sm">
-                <a href="dashboard.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Dashboard</a>
-                <a href="users.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">User Management</a>
-                <a href="laboratories.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Laboratories</a>
-                <a href="equipment.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Equipment</a>
-                <a href="bookings.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Bookings & Schedule</a>
-                <a href="maintenance.html" class="block px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium">Maintenance</a>
-                <a href="reports.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Reports</a>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="users.html" class="nav-link">User Management</a>
+                <a href="laboratories.html" class="nav-link">Laboratories</a>
+                <a href="equipment.html" class="nav-link">Equipment</a>
+                <a href="bookings.html" class="nav-link">Bookings &amp; Schedule</a>
+                <a href="maintenance.html" class="nav-link active">Maintenance</a>
+                <a href="reports.html" class="nav-link">Audit Logs</a>
             </nav>
         </div>
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-400">Xian (Maintenance Module)</div>
+        <div class="sidebar-bottom">
+            <p>Maintenance Module</p>
+        </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="ml-64 flex-1 flex flex-col min-h-screen">
+    <main class="main-content">
         <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900">Maintenance Management</h1>
                 <p class="text-sm text-slate-500">Report issues, track maintenance work, and manage status values.</p>
             </div>
             <div class="flex items-center space-x-3">
-                <span class="bg-blue-700 text-white font-semibold rounded-full w-9 h-9 flex items-center justify-center text-sm">X</span>
-                <span class="text-sm font-medium text-slate-700">xian@example.com</span>
+                <span id="userAvatar" class="bg-blue-700 text-white font-semibold rounded-full w-9 h-9 flex items-center justify-center text-sm">U</span>
+                <span id="userEmail" class="text-sm font-medium text-slate-700">Loading...</span>
             </div>
         </header>
 
@@ -50,8 +54,9 @@
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Requests</h2>
                     <button onclick="openCreateModal('issueModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Report Issue</button>
                 </div>
-                <table class="w-full text-left border-collapse">
-                    <thead>
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full min-w-[800px] text-left border-collapse">
+                        <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
                             <th class="py-3 px-4">ID</th>
                             <th class="py-3 px-4">Equipment ID</th>
@@ -62,6 +67,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
                 </table>
+            </div>
             </section>
 
             <!-- Maintenance Records Section -->
@@ -70,7 +76,8 @@
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Records</h2>
                     <button onclick="openCreateModal('recordModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Log Work</button>
                 </div>
-                <table class="w-full text-left border-collapse">
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full min-w-[800px] text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
                             <th class="py-3 px-4">ID</th>
@@ -82,6 +89,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
                 </table>
+                </div>
             </section>
 
             <!-- Maintenance Statuses Section -->
@@ -90,7 +98,8 @@
                     <h2 class="text-lg font-bold text-slate-900">Maintenance Statuses</h2>
                     <button onclick="openCreateModal('statusModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Status</button>
                 </div>
-                <table class="w-full text-left border-collapse">
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full min-w-[800px] text-left border-collapse">
                     <thead>
                         <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
                             <th class="py-3 px-4">ID</th>
@@ -101,6 +110,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
                 </table>
+                </div>
             </section>
         </div>
     </main>
@@ -179,8 +189,9 @@
         </div>
     </div>
 
+    <script src="js/api.js"></script>
     <script>
-        const API_BASE = 'http://localhost:3000/api/maintenance';
+        const API_BASE = 'http://127.0.0.1:3000/api/maintenance';
 
         let requestsData = [];
         let recordsData = [];
@@ -388,7 +399,30 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', loadMaintenanceData);
+        async function loadCurrentUser() {
+    try {
+        const data = await apiRequest("/auth/me");
+
+        const email = data.user.email;
+
+        document.getElementById("userEmail").textContent = email;
+        document.getElementById("userAvatar").textContent =
+            email.charAt(0).toUpperCase();
+
+    } catch (error) {
+        console.error("Session check failed:", error.message);
+        window.location.href = "login.html";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadCurrentUser();
+
+    if (document.getElementById("userEmail").textContent !== "Loading...") {
+        loadMaintenanceData();
+    }
+});
     </script>
+    </div>
 </body>
 </html>
