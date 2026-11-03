@@ -1,4 +1,3 @@
-const API = "http://localhost:3000/api";
 let allLabs = [];
 
 function toggleForm() {
@@ -26,8 +25,7 @@ async function loadLabs() {
     const list = document.getElementById("labList");
     list.innerHTML = "<p class='loading-msg'>Loading laboratories...</p>";
     try {
-        const res = await fetch(`${API}/laboratories`);
-        const data = await res.json();
+        const data = await apiRequest("/laboratories");
         if (data.success) {
             allLabs = data.data;
             renderList(allLabs);
@@ -127,21 +125,19 @@ async function saveLab() {
         status_id: status_id
     };
 
-    let url = `${API}/laboratories`;
-    let method = "POST";
+   let url = "/laboratories";
+let method = "POST";
 
-    if (editId) {
-        url = `${API}/laboratories/${editId}`;
-        method = "PUT";
-    }
+if (editId) {
+    url = `/laboratories/${editId}`;
+    method = "PUT";
+}
 
-    const res = await fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+    const data = await apiRequest(url, {
+    method: method,
+    body: JSON.stringify(body)
+});
 
-    const data = await res.json();
     if (data.success) {
         alert(editId ? "Lab updated!" : "Lab added!");
         toggleForm();
@@ -173,7 +169,9 @@ async function deleteLab(event, id) {
     event.stopPropagation();
 
     if (confirm("Are you sure you want to delete this lab?")) {
-        await fetch(`${API}/laboratories/${id}`, { method: "DELETE" });
+        await apiRequest(`/laboratories/${id}`, {
+    method: "DELETE"
+});
         loadLabs();
     }
 }
