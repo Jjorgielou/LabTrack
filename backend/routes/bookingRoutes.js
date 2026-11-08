@@ -6,6 +6,7 @@ const bookingController = require("../controllers/bookingController");
 const requireAuth = require("../middleware/requireAuth");
 const requireRole = require("../middleware/requireRole");
 
+// View bookings
 router.get(
     "/",
     requireAuth,
@@ -13,6 +14,7 @@ router.get(
     bookingController.getAllBookings
 );
 
+// Get booked dates for a selected laboratory
 router.get(
     "/booked-dates",
     requireAuth,
@@ -20,6 +22,7 @@ router.get(
     bookingController.getBookedDates
 );
 
+// Create a booking
 router.post(
     "/",
     requireAuth,
@@ -27,7 +30,7 @@ router.post(
     bookingController.createBooking
 );
 
-// Only Admin can manually override a booking status.
+// Only Admin can manually update booking status
 router.patch(
     "/:booking_id/status",
     requireAuth,

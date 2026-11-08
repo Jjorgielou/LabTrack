@@ -30,16 +30,18 @@ async function getAllBookings(requesterId = null) {
 }
 
 // GET BOOKED DATES
-// All dates remain selectable. Time conflicts are checked during submission.
+// Dates remain selectable; conflicts are checked during submission.
 async function getBookedDates(labId) {
     return [];
 }
 
-// CREATE BOOKING WITH AUTOMATIC APPROVAL / REJECTION
+// CREATE BOOKING WITH SCHEDULE VALIDATION
+// Conflicting requests are saved as Rejected and recorded in conflict_logs.
 async function createBooking(bookingData) {
     const {
         requester_id,
         lab_id,
+        schedule_id,
         requested_date,
         start_time,
         end_time,
@@ -51,7 +53,7 @@ async function createBooking(bookingData) {
     try {
         await connection.beginTransaction();
 
-        // Lock the laboratory to prevent simultaneous booking requests.
+        // Lock the laboratory while processing the booking.
         const [labs] = await connection.query(
             `SELECT lab_id
              FROM laboratories
@@ -65,8 +67,32 @@ async function createBooking(bookingData) {
             return { labNotFound: true };
         }
 
-        // Check overlapping Pending or Approved bookings.
-        // Non-overlapping bookings on the same date are allowed.
+        // Validate Rain's selected schedule.
+        const [schedules] = await connection.query(
+            `SELECT schedule_id, start_time, end_time, is_available
+             FROM schedules
+             WHERE schedule_id = ?
+               AND lab_id = ?
+               AND schedule_date = ?
+               AND is_available = 1
+               AND start_time <= ?
+               AND end_time >= ?
+             FOR UPDATE`,
+            [
+                schedule_id,
+                lab_id,
+                requested_date,
+                start_time,
+                end_time
+            ]
+        );
+
+        if (schedules.length === 0) {
+            await connection.rollback();
+            return { invalidSchedule: true };
+        }
+
+        // Check for overlapping Pending or Approved bookings.
         const [conflicts] = await connection.query(
             `SELECT b.booking_id
              FROM bookings b
@@ -81,95 +107,11 @@ async function createBooking(bookingData) {
             [lab_id, requested_date, end_time, start_time]
         );
 
-        // Save overlapping booking attempts as Rejected.
+        let statusName = "Approved";
+
+        // A conflicting request is saved as Rejected.
         if (conflicts.length > 0) {
-            const [rejectedStatuses] = await connection.query(
-                `SELECT status_id
-                 FROM booking_statuses
-                 WHERE status_name = 'Rejected'`
-            );
-
-            if (rejectedStatuses.length === 0) {
-                throw new Error("Rejected booking status was not found.");
-            }
-
-            const conflictingBookingId = conflicts[0].booking_id;
-
-            const [rejectedBooking] = await connection.query(
-                `INSERT INTO bookings
-                 (
-                     requester_id, lab_id, schedule_id,
-                     requested_date, start_time, end_time,
-                     purpose, status_id
-                 )
-                 VALUES (?, ?, NULL, ?, ?, ?, ?, ?)`,
-                [
-                    requester_id,
-                    lab_id,
-                    requested_date,
-                    start_time,
-                    end_time,
-                    purpose,
-                    rejectedStatuses[0].status_id
-                ]
-            );
-
-            const rejectedBookingId = rejectedBooking.insertId;
-
-            await connection.query(
-                `INSERT INTO conflict_logs
-                 (
-                     booking_id, conflict_booking_id, lab_id,
-                     conflict_type, description, conflict_status
-                 )
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    rejectedBookingId,
-                    conflictingBookingId,
-                    lab_id,
-                    "Time Overlap",
-                    `Booking ${rejectedBookingId} was rejected because its requested time overlaps booking ${conflictingBookingId} for laboratory ${lab_id} on ${requested_date}.`,
-                    "detected"
-                ]
-            );
-
-            await connection.commit();
-
-            return {
-                conflict: true,
-                booking_id: rejectedBookingId,
-                conflicting_booking_id: conflictingBookingId,
-                status: "Rejected",
-                message: "Booking rejected because its requested time overlaps an existing booking."
-            };
-        }
-
-        // Check schedules for this laboratory and date.
-        const [schedules] = await connection.query(
-            `SELECT schedule_id, start_time, end_time, is_available
-             FROM schedules
-             WHERE lab_id = ?
-               AND schedule_date = ?`,
-            [lab_id, requested_date]
-        );
-
-        let statusName = "Pending";
-        let scheduleId = null;
-
-        if (schedules.length > 0) {
-            // Find an available schedule that fully contains the requested time.
-            const matchingSchedule = schedules.find(schedule =>
-                Number(schedule.is_available) === 1 &&
-                schedule.start_time <= start_time &&
-                schedule.end_time >= end_time
-            );
-
-            if (matchingSchedule) {
-                statusName = "Approved";
-                scheduleId = matchingSchedule.schedule_id;
-            } else {
-                statusName = "Rejected";
-            }
+            statusName = "Rejected";
         }
 
         const [statuses] = await connection.query(
@@ -183,19 +125,23 @@ async function createBooking(bookingData) {
             throw new Error(`${statusName} booking status was not found.`);
         }
 
-        // Insert the booking with its automatically determined status.
         const [result] = await connection.query(
             `INSERT INTO bookings
              (
-                 requester_id, lab_id, schedule_id,
-                 requested_date, start_time, end_time,
-                 purpose, status_id
+                 requester_id,
+                 lab_id,
+                 schedule_id,
+                 requested_date,
+                 start_time,
+                 end_time,
+                 purpose,
+                 status_id
              )
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 requester_id,
                 lab_id,
-                scheduleId,
+                schedule_id,
                 requested_date,
                 start_time,
                 end_time,
@@ -204,17 +150,45 @@ async function createBooking(bookingData) {
             ]
         );
 
+        // Record the conflict while retaining the rejected booking.
+        if (conflicts.length > 0) {
+            const conflictingBookingId = conflicts[0].booking_id;
+
+            await connection.query(
+                `INSERT INTO conflict_logs
+                 (
+                     booking_id,
+                     conflict_booking_id,
+                     lab_id,
+                     conflict_type,
+                     description,
+                     conflict_status
+                 )
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    result.insertId,
+                    conflictingBookingId,
+                    lab_id,
+                    "Time Overlap",
+                    `Booking ${result.insertId} was rejected because its requested time overlaps booking ${conflictingBookingId} for laboratory ${lab_id} on ${requested_date}.`,
+                    "detected"
+                ]
+            );
+        }
+
         await connection.commit();
 
         return {
-            ...result,
+            booking_id: result.insertId,
+            insertId: result.insertId,
             status: statusName,
-            message:
-                statusName === "Approved"
-                    ? "Booking automatically approved because it fits an available schedule."
-                    : statusName === "Rejected"
-                        ? "Booking rejected because the requested time does not fit an available schedule."
-                        : "Booking submitted for Admin review because no schedule exists for this date."
+            conflict: conflicts.length > 0,
+            conflicting_booking_id: conflicts.length > 0
+                ? conflicts[0].booking_id
+                : null,
+            message: conflicts.length > 0
+                ? "Booking rejected because its requested time overlaps an existing booking."
+                : "Booking automatically approved because it fits an available schedule."
         };
 
     } catch (error) {
@@ -246,7 +220,7 @@ async function updateBookingStatus(booking_id, status_id) {
 
         const labId = initialBookings[0].lab_id;
 
-        // Lock the laboratory before checking for conflicts.
+        // Lock the laboratory before checking conflicts.
         const [labs] = await connection.query(
             `SELECT lab_id
              FROM laboratories
@@ -267,6 +241,11 @@ async function updateBookingStatus(booking_id, status_id) {
              FOR UPDATE`,
             [booking_id]
         );
+
+        if (bookings.length === 0) {
+            await connection.rollback();
+            return { notFound: true };
+        }
 
         const [statuses] = await connection.query(
             `SELECT status_id, status_name
@@ -315,8 +294,12 @@ async function updateBookingStatus(booking_id, status_id) {
                 await connection.query(
                     `INSERT INTO conflict_logs
                      (
-                         booking_id, conflict_booking_id, lab_id,
-                         conflict_type, description, conflict_status
+                         booking_id,
+                         conflict_booking_id,
+                         lab_id,
+                         conflict_type,
+                         description,
+                         conflict_status
                      )
                      VALUES (?, ?, ?, ?, ?, ?)`,
                     [
