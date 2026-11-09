@@ -1,4 +1,3 @@
-
 const express = require("express");
 require("dotenv").config();
 
@@ -12,6 +11,7 @@ const authRoutes = require("./routes/auth");
 const auditLogRoutes = require("./routes/auditLogs");
 const equipmentRoutes = require("./routes/equipment");
 const equipmentCategoryRoutes = require("./routes/equipmentCategories");
+const maintenanceRoutes = require("./routes/maintenanceroutes"); // Added maintenance module
 
 const requireAuth = require("./middleware/requireAuth");
 const requireRole = require("./middleware/requireRole");
@@ -49,6 +49,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/equipment-categories", equipmentCategoryRoutes);
+app.use("/api/maintenance", maintenanceRoutes); // Registered maintenance routes
 app.get("/api/dashboard/stats", requireAuth, requireRole("Admin"), dashboardController.getDashboardStats);
 
 // Welcome Route

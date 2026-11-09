@@ -50,13 +50,12 @@ const login = async (req, res) => {
         }
 
         req.session.user = {
-        user_id: user.user_id,
-        email: user.email,
-        role: user.role_name
+            user_id: user.user_id,
+            email: user.email,
+            role: user.role_name
         };
         console.log("SESSION CREATED:", req.session.user);
         console.log("SESSION ID:", req.sessionID);
-
 
         return req.session.save(async (error) => {
             if (error) {
@@ -77,20 +76,6 @@ const login = async (req, res) => {
                 message: "Login successful.",
                 user: req.session.user
             });
-        });
-        await auditLogModel.safeCreateAuditLog(
-            user.user_id,
-            "USER_LOGIN",
-            `User ${user.email} logged in successfully.`
-        );
-
-        return res.status(200).json({
-            message: "Login successful.",
-            user: {
-                user_id: user.user_id,
-                email: user.email,
-                role: user.role_name
-            }
         });
     } catch (error) {
         console.error("Login error:", error.message);

@@ -1,23 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/maintenanceController');
+const maintenanceController = require('../controllers/maintenanceController');
+const requireAuth = require('../middleware/requireAuth');
+const requireRole = require('../middleware/requireRole');
 
-router.get('/', controller.getAll);
-router.get('/requests', controller.getRequests);
-router.get('/records', controller.getRecords);
-router.get('/statuses', controller.getStatuses);
+// GET /api/maintenance/records
+router.get('/records', requireAuth, requireRole(['Admin', 'Staff']), maintenanceController.getMaintenanceRecords);
 
-router.post('/', controller.create);
-router.post('/records', controller.createRecord);
-router.post('/statuses', controller.createStatus);
+// POST /api/maintenance
+router.post('/', requireAuth, requireRole(['Admin', 'Staff']), maintenanceController.createRecord);
 
-router.put('/:id', controller.updateStatus);
-router.put('/requests/:id', controller.updateRequest);
-router.put('/records/:id', controller.updateRecord);
-router.put('/statuses/:id', controller.updateStatusDefinition);
+// PUT /api/maintenance/:id
+router.put('/:id', requireAuth, requireRole(['Admin', 'Staff']), maintenanceController.updateStatus);
 
-router.delete('/:id', controller.remove);
-router.delete('/records/:id', controller.deleteRecord);
-router.delete('/statuses/:id', controller.deleteStatus);
+// DELETE /api/maintenance/:id
+router.delete('/:id', requireAuth, requireRole(['Admin', 'Staff']), maintenanceController.deleteRecord);
 
 module.exports = router;

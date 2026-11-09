@@ -1,74 +1,43 @@
 const db = require('../config/db');
 
-const Maintenance = {
-    getAllRequests: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_requests');
+const maintenanceModel = {
+    async getAllRecords() {
+        const [rows] = await db.query(`
+            SELECT 
+                mr.*, 
+                ms.name AS status_name, 
+                e.name AS equipment_name
+            FROM maintenance_requests mr
+            LEFT JOIN maintenance_statuses ms ON mr.maintenance_status_id = ms.id
+            LEFT JOIN equipment e ON mr.equipment_id = e.id
+        `);
         return rows;
-    },
-    createRequest: async (data) => {
-        const { equipment_id, description, status } = data;
-        const [result] = await db.query(
-            'INSERT INTO maintenance_requests (equipment_id, description, status) VALUES (?, ?, ?)',
-            [equipment_id, description, status]
-        );
-        return result.insertId;
-    },
-    updateRequest: async (id, data) => {
-        const { equipment_id, description, status } = data;
-        await db.query(
-            'UPDATE maintenance_requests SET equipment_id = ?, description = ?, status = ? WHERE id = ?',
-            [equipment_id, description, status, id]
-        );
-    },
-    deleteRequest: async (id) => {
-        await db.query('DELETE FROM maintenance_requests WHERE id = ?', [id]);
     },
 
-    getAllRecords: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_records');
-        return rows;
-    },
-    createRecord: async (data) => {
-        const { request_id, work_performed, technician } = data;
+    async createRecord(data) {
+        const { equipment_id, maintenance_status_id, description } = data;
         const [result] = await db.query(
-            'INSERT INTO maintenance_records (request_id, work_performed, technician) VALUES (?, ?, ?)',
-            [request_id, work_performed, technician]
+            `INSERT INTO maintenance_requests (equipment_id, maintenance_status_id, description) VALUES (?, ?, ?)`,
+            [equipment_id, maintenance_status_id, description]
         );
         return result.insertId;
-    },
-    updateRecord: async (id, data) => {
-        const { request_id, work_performed, technician } = data;
-        await db.query(
-            'UPDATE maintenance_records SET request_id = ?, work_performed = ?, technician = ? WHERE id = ?',
-            [request_id, work_performed, technician, id]
-        );
-    },
-    deleteRecord: async (id) => {
-        await db.query('DELETE FROM maintenance_records WHERE id = ?', [id]);
     },
 
-    getAllStatuses: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_statuses');
-        return rows;
-    },
-    createStatus: async (data) => {
-        const { name, description } = data;
+    async updateStatus(id, maintenance_status_id) {
         const [result] = await db.query(
-            'INSERT INTO maintenance_statuses (name, description) VALUES (?, ?)',
-            [name, description]
+            `UPDATE maintenance_requests SET maintenance_status_id = ? WHERE id = ?`,
+            [maintenance_status_id, id]
         );
-        return result.insertId;
+        return result.affectedRows;
     },
-    updateStatus: async (id, data) => {
-        const { name, description } = data;
-        await db.query(
-            'UPDATE maintenance_statuses SET name = ?, description = ? WHERE id = ?',
-            [name, description, id]
+
+    async deleteRecord(id) {
+        const [result] = await db.query(
+            `DELETE FROM maintenance_requests WHERE id = ?`,
+            [id]
         );
-    },
-    deleteStatus: async (id) => {
-        await db.query('DELETE FROM maintenance_statuses WHERE id = ?', [id]);
+        return result.affectedRows;
     }
 };
 
-module.exports = Maintenance;
+module.exports = maintenanceModel;
