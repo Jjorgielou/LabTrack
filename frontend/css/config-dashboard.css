@@ -1,0 +1,205 @@
+
+/* Departments & Courses page
+   Uses shared style.css for the sidebar, topbar, and main layout.
+*/
+
+/* Page content */
+.dashboard-page #content .page {
+    width: 100%;
+    color: #263445;
+}
+
+.dashboard-page #content .page > h2 {
+    color: #173b63;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.dashboard-page #content .page > p {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+/* Department and Course sections */
+.dashboard-page .management-section {
+    background: #ffffff;
+    padding: 24px;
+    margin-top: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-page .management-section h3 {
+    color: #173b63;
+    font-size: 19px;
+    margin-bottom: 18px;
+}
+
+/* Forms */
+.dashboard-page #department-form,
+.dashboard-page #course-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.dashboard-page #department-form input,
+.dashboard-page #course-form input,
+.dashboard-page #course-form select {
+    flex: 1;
+    min-width: 160px;
+    padding: 11px 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #263445;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+}
+
+.dashboard-page #department-form input:focus,
+.dashboard-page #course-form input:focus,
+.dashboard-page #course-form select:focus {
+    border-color: #285681;
+    box-shadow: 0 0 0 2px rgba(40, 86, 129, 0.12);
+}
+
+/* Add buttons */
+.dashboard-page #department-form button,
+.dashboard-page #course-form button {
+    padding: 11px 18px;
+    color: #ffffff;
+    background: #173b63;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-page #department-form button:hover,
+.dashboard-page #course-form button:hover {
+    background: #285681;
+}
+
+/* Tables */
+.dashboard-page .table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dashboard-page .management-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.dashboard-page .management-table th,
+.dashboard-page .management-table td {
+    padding: 13px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+}
+
+.dashboard-page .management-table th {
+    color: #173b63;
+    background: #f1f5f9;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-page .management-table td {
+    color: #263445;
+}
+
+.dashboard-page .management-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Delete buttons */
+.dashboard-page .management-table .delete-btn {
+    padding: 7px 12px;
+    color: #ffffff;
+    background: #dc3545;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.dashboard-page .management-table .delete-btn:hover {
+    background: #b02a37;
+}
+
+/* Hidden elements used by role permissions */
+.dashboard-page .hidden {
+    display: none !important;
+}
+
+/* Responsive layout */
+@media (max-width: 700px) {
+    .dashboard-page .management-section {
+        padding: 16px;
+    }
+
+    .dashboard-page #department-form,
+    .dashboard-page #course-form {
+        flex-direction: column;
+    }
+
+    .dashboard-page #department-form input,
+    .dashboard-page #course-form input,
+    .dashboard-page #course-form select,
+    .dashboard-page #department-form button,
+    .dashboard-page #course-form button {
+        width: 100%;
+    }
+
+    .dashboard-page .management-table th,
+    .dashboard-page .management-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+/* Prevent topbar email from overlapping other elements */
+.dashboard-page .topbar {
+    gap: 15px;
+}
+
+.dashboard-page .topbar h2 {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-page .topbar .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.dashboard-page .topbar .user-info span {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+@media (max-width: 700px) {
+    .dashboard-page .topbar {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-page .topbar h2 {
+        font-size: 18px;
+    }
+
+    .dashboard-page .topbar .user-info {
+        margin-left: auto;
+    }
+}

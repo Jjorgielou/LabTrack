@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conflict Reports | LabTrack</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        a, button {
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .nav-link {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 85px;
+        }
+
+        .primary-button {
+            background: #2563eb;
+            color: white;
+        }
+
+        .primary-button:hover {
+            background: #1d4ed8;
+        }
+
+        .secondary-button {
+            background: #64748b;
+            color: white;
+        }
+
+        .danger-button {
+            background: #dc2626;
+            color: white;
+        }
+
+        .status-select {
+            min-width: 125px;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th, td {
+            padding: 13px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #64748b;
+            padding: 25px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 15px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <header class="header">
+            <div>
+                <h1>Conflict Reports</h1>
+                <p class="subtitle">
+                    Review and manage laboratory booking conflicts.
+                </p>
+            </div>
+
+            <nav class="navigation">
+                <a href="dashboard.html" class="nav-link">
+                    Dashboard
+                </a>
+
+                <a href="notifications.html" class="nav-link">
+                    Notifications
+                </a>
+            </nav>
+        </header>
+
+        <section class="card" id="createConflictSection">
+            <h2>Report a Conflict</h2>
+
+            <form id="conflictForm">
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="bookingId">Booking ID</label>
+                        <input
+                            type="number"
+                            id="bookingId"
+                            min="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="conflictBookingId">
+                            Conflicting Booking ID
+                        </label>
+                        <input
+                            type="number"
+                            id="conflictBookingId"
+                            min="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="labId">Laboratory ID</label>
+                        <input
+                            type="number"
+                            id="labId"
+                            min="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="conflictType">Conflict Type</label>
+                        <input
+                            type="text"
+                            id="conflictType"
+                            placeholder="Example: Schedule Overlap"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="description">Description</label>
+                        <textarea
+                            id="description"
+                            placeholder="Describe the conflict..."
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <button
+                            type="submit"
+                            class="primary-button"
+                            id="submitConflictButton"
+                        >
+                            Submit Conflict Report
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
+            <p id="conflictFormMessage" class="message"></p>
+        </section>
+
+        <section class="card">
+            <h2>Conflict Records</h2>
+
+            <p id="conflictListMessage" class="message">
+                Loading conflict records...
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Conflict ID</th>
+                            <th>Booking IDs</th>
+                            <th>Laboratory</th>
+                            <th>Conflict Type</th>
+                            <th>Status</th>
+                            <th>Detected At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="conflictsTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-message">
+                                Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/conflicts.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+const express = require("express");
+const router = express.Router();
+
+const controller = require("./conflictController_fixed");
+
+const requireAuth = require("../../backend/middleware/requireAuth");
+const requireRole = require("../../backend/middleware/requireRole");
+
+// Departments and courses: all authenticated users can view;
+// only Admin can manage.
+router.get("/departments", requireAuth, controller.getDepartments);
+router.post("/departments", requireAuth, requireRole("Admin"), controller.addDepartment);
+router.put("/departments/:id", requireAuth, requireRole("Admin"), controller.editDepartment);
+router.delete("/departments/:id", requireAuth, requireRole("Admin"), controller.removeDepartment);
+
+router.get("/courses", requireAuth, controller.getCourses);
+router.post("/courses", requireAuth, requireRole("Admin"), controller.addCourse);
+router.put("/courses/:id", requireAuth, requireRole("Admin"), controller.editCourse);
+router.delete("/courses/:id", requireAuth, requireRole("Admin"), controller.removeCourse);
+
+// Conflicts: Admin and Laboratory Staff can manage;
+// only Admin can delete.
+router.get("/conflicts", requireAuth, requireRole("Admin", "Laboratory Staff"), controller.getConflicts);
+router.post("/conflicts", requireAuth, requireRole("Admin", "Laboratory Staff"), controller.addConflict);
+router.put("/conflicts/:id/status", requireAuth, requireRole("Admin", "Laboratory Staff"), controller.editConflictStatus);
+router.delete("/conflicts/:id", requireAuth, requireRole("Admin"), controller.removeConflict);
+
+// Notifications: users can view their own;
+// Admin and Laboratory Staff can view all and create.
+router.get("/notifications", requireAuth, requireRole("Admin", "Laboratory Staff"), controller.getNotifications);
+router.get("/notifications/mine", requireAuth, controller.getUserNotifications);
+router.post("/notifications", requireAuth, requireRole("Admin", "Laboratory Staff"), controller.addNotification);
+router.delete("/notifications/:id", requireAuth, requireRole("Admin"), controller.removeNotification);
+
+module.exports = router;
