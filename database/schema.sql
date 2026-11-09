@@ -1,4 +1,4 @@
-contains the LabTrack database table definitions and relationships
+-- contains the LabTrack database table definitions and relationships
 
 CREATE DATABASE IF NOT EXISTS labtrack_db;
 USE labtrack_db;
