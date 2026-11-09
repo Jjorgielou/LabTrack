@@ -2,6 +2,7 @@ const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const auditLogModel = require("../models/auditLogModel");
 
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -18,17 +19,17 @@ const login = async (req, res) => {
         }
 
         const [users] = await db.query(
-            `SELECT u.user_id, u.email, u.password_hash,
-                    r.role_name
+            `SELECT
+                u.user_id,
+                u.email,
+                u.password_hash,
+                r.role_name
              FROM users u
              JOIN roles r ON u.role_id = r.role_id
              WHERE u.email = ?
              LIMIT 1`,
             [email.trim()]
         );
-
-        console.log("Login email:", email.trim());
-        console.log("Matching users found:", users.length);
 
         if (users.length === 0) {
             return res.status(401).json({
@@ -49,57 +50,57 @@ const login = async (req, res) => {
             });
         }
 
-        req.session.user = {
-        user_id: user.user_id,
-        email: user.email,
-        role: user.role_name
-        };
-        console.log("SESSION CREATED:", req.session.user);
-        console.log("SESSION ID:", req.sessionID);
-
-
-        return req.session.save(async (error) => {
+        // Generate a fresh session after successful authentication.
+        req.session.regenerate((error) => {
             if (error) {
-                console.error("Session save error:", error);
+                console.error("Session regeneration error:", error);
 
                 return res.status(500).json({
-                    message: "Unable to save login session."
+                    message: "Unable to create login session."
                 });
             }
 
-            await auditLogModel.safeCreateAuditLog(
-                user.user_id,
-                "USER_LOGIN",
-                `User ${user.email} logged in successfully.`
-            );
-
-            return res.status(200).json({
-                message: "Login successful.",
-                user: req.session.user
-            });
-        });
-        await auditLogModel.safeCreateAuditLog(
-            user.user_id,
-            "USER_LOGIN",
-            `User ${user.email} logged in successfully.`
-        );
-
-        return res.status(200).json({
-            message: "Login successful.",
-            user: {
+            req.session.user = {
                 user_id: user.user_id,
                 email: user.email,
                 role: user.role_name
-            }
+            };
+
+            req.session.save(async (saveError) => {
+                if (saveError) {
+                    console.error("Session save error:", saveError);
+
+                    return res.status(500).json({
+                        message: "Unable to save login session."
+                    });
+                }
+
+                try {
+                    await auditLogModel.safeCreateAuditLog(
+                        user.user_id,
+                        "USER_LOGIN",
+                        `User ${user.email} logged in successfully.`
+                    );
+                } catch (auditError) {
+                    console.error("Login audit error:", auditError);
+                }
+
+                return res.status(200).json({
+                    message: "Login successful.",
+                    user: req.session.user
+                });
+            });
         });
+
     } catch (error) {
-        console.error("Login error:", error.message);
+        console.error("Login error:", error);
 
         return res.status(500).json({
             message: "An internal server error occurred."
         });
     }
 };
+
 
 async function logout(req, res) {
     const user = req.session?.user;

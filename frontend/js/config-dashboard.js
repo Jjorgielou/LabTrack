@@ -1,14 +1,7 @@
-// API configuration
-const API_BASE_URL = "http://127.0.0.1:3000/api";
 
 // Current user
 let currentUser = null;
 let currentRole = "";
-
-// Navigation elements
-const navLinks = document.querySelectorAll(".nav-link");
-const pages = document.querySelectorAll(".page");
-const pageTitle = document.getElementById("page-title");
 
 // Database-backed data
 let departments = [];
@@ -19,26 +12,6 @@ function showMessage(message) {
     alert(message);
 }
 
-// API request helper
-async function apiRequest(endpoint, options = {}) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-            ...options.headers
-        },
-        ...options
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-        throw new Error(result.message || "Something went wrong.");
-    }
-
-    return result;
-}
-
 // Check the logged-in user
 async function loadCurrentUser() {
     try {
@@ -47,7 +20,39 @@ async function loadCurrentUser() {
         currentUser = result.user;
         currentRole = currentUser.role;
 
+        const userEmail = document.getElementById("userEmail");
+        const userAvatar = document.getElementById("userAvatar");
+
+        if (userEmail) {
+            userEmail.textContent = currentUser.email;
+        }
+
+        if (userAvatar) {
+            userAvatar.textContent =
+                currentUser.email.charAt(0).toUpperCase();
+        }
+
+        const profileName = document.getElementById("profileName");
+        const profileRole = document.getElementById("profileRole");
+
+        if (profileName) {
+            profileName.textContent =
+                currentUser.name || currentUser.email;
+        }
+
+        if (profileRole) {
+            profileRole.textContent = currentUser.role;
+        }
+
+        const profileAvatar = document.querySelector(".profile-avatar");
+
+        if (profileAvatar) {
+            profileAvatar.textContent =
+                currentUser.email.charAt(0).toUpperCase();
+        }
+
         updateInterfaceByRole();
+
     } catch (error) {
         console.error("Authentication error:", error);
         alert("Your session has expired. Please log in again.");
@@ -58,16 +63,9 @@ async function loadCurrentUser() {
 
 // Apply role-based interface permissions
 function updateInterfaceByRole() {
-    const headerLabel = document.querySelector(".topbar span");
-
-    if (headerLabel) {
-        headerLabel.textContent = `${currentRole} Panel`;
-    }
-
     const canManage = ["Admin", "Laboratory Staff"].includes(currentRole);
     const isAdmin = currentRole === "Admin";
 
-    // Show or hide department and course forms
     const departmentForm = document.getElementById("department-form");
     const courseForm = document.getElementById("course-form");
 
@@ -79,49 +77,13 @@ function updateInterfaceByRole() {
         courseForm.classList.toggle("hidden", !canManage);
     }
 
-    // Store permissions for list rendering
     window.labtrackPermissions = {
         canManage,
         isAdmin
     };
 
-    // Hide delete buttons for non-admin users
     displayDepartments();
     displayCourses();
-}
-
-// Navigation
-navLinks.forEach(link => {
-    link.addEventListener("click", function(event) {
-        event.preventDefault();
-
-        const selectedPage = this.dataset.page;
-
-        pages.forEach(section => section.classList.add("hidden"));
-
-        const targetPage = document.getElementById(selectedPage);
-
-        if (targetPage) {
-            targetPage.classList.remove("hidden");
-        }
-
-        navLinks.forEach(item => item.classList.remove("active"));
-
-        this.classList.add("active");
-
-        if (pageTitle) {
-            pageTitle.textContent = this.textContent.trim();
-        }
-    });
-});
-
-// Update dashboard counts
-function updateDashboard() {
-    document.getElementById("department-count").textContent =
-        departments.length;
-
-    document.getElementById("course-count").textContent =
-        courses.length;
 }
 
 // Load departments from database
@@ -133,7 +95,7 @@ async function loadDepartments() {
 
         displayDepartments();
         populateDepartmentDropdown();
-        updateDashboard();
+
     } catch (error) {
         console.error("Load departments error:", error);
         showMessage("Unable to load departments: " + error.message);
@@ -143,28 +105,31 @@ async function loadDepartments() {
 // Display departments
 function displayDepartments() {
     const list = document.getElementById("department-list");
-
     if (!list) return;
 
     list.innerHTML = "";
 
     if (departments.length === 0) {
-        list.textContent = "No departments found.";
+        list.innerHTML = `
+            <tr>
+                <td colspan="3">No departments found.</td>
+            </tr>
+        `;
         return;
     }
 
-    const permissions = window.labtrackPermissions || {};
-    const isAdmin = permissions.isAdmin;
+    const isAdmin = window.labtrackPermissions?.isAdmin;
 
     departments.forEach((department, index) => {
-        const item = document.createElement("div");
-        item.className = "list-item";
+        const row = document.createElement("tr");
 
-        const name = document.createElement("span");
-        name.textContent =
-            `${index + 1}. ${department.department_name}`;
+        const numberCell = document.createElement("td");
+        numberCell.textContent = index + 1;
 
-        item.appendChild(name);
+        const nameCell = document.createElement("td");
+        nameCell.textContent = department.department_name;
+
+        const actionCell = document.createElement("td");
 
         if (isAdmin) {
             const deleteButton = document.createElement("button");
@@ -186,22 +151,25 @@ function displayDepartments() {
                     await loadCourses();
 
                     showMessage("Department deleted successfully.");
+
                 } catch (error) {
                     showMessage(error.message);
                 }
             });
 
-            item.appendChild(deleteButton);
+            actionCell.appendChild(deleteButton);
+        } else {
+            actionCell.textContent = "—";
         }
 
-        list.appendChild(item);
+        row.append(numberCell, nameCell, actionCell);
+        list.appendChild(row);
     });
 }
 
-// Populate department dropdown for courses
+// Populate department dropdown
 function populateDepartmentDropdown() {
     const dropdown = document.getElementById("course-department");
-
     if (!dropdown) return;
 
     dropdown.innerHTML = "";
@@ -209,10 +177,12 @@ function populateDepartmentDropdown() {
     const defaultOption = document.createElement("option");
     defaultOption.value = "";
     defaultOption.textContent = "Select Department";
+
     dropdown.appendChild(defaultOption);
 
     departments.forEach(department => {
         const option = document.createElement("option");
+
         option.value = department.department_id;
         option.textContent = department.department_name;
 
@@ -249,9 +219,11 @@ if (departmentForm) {
             });
 
             this.reset();
+
             await loadDepartments();
 
             showMessage("Department added successfully.");
+
         } catch (error) {
             showMessage(error.message);
         }
@@ -266,7 +238,7 @@ async function loadCourses() {
         courses = result.data || [];
 
         displayCourses();
-        updateDashboard();
+
     } catch (error) {
         console.error("Load courses error:", error);
         showMessage("Unable to load courses: " + error.message);
@@ -276,28 +248,37 @@ async function loadCourses() {
 // Display courses
 function displayCourses() {
     const list = document.getElementById("course-list");
-
     if (!list) return;
 
     list.innerHTML = "";
 
     if (courses.length === 0) {
-        list.textContent = "No courses found.";
+        list.innerHTML = `
+            <tr>
+                <td colspan="5">No courses found.</td>
+            </tr>
+        `;
         return;
     }
 
-    const permissions = window.labtrackPermissions || {};
-    const isAdmin = permissions.isAdmin;
+    const isAdmin = window.labtrackPermissions?.isAdmin;
 
     courses.forEach((course, index) => {
-        const item = document.createElement("div");
-        item.className = "list-item";
+        const row = document.createElement("tr");
 
-        const details = document.createElement("span");
-        details.textContent =
-            `${index + 1}. ${course.course_name} (${course.course_code}) - ${course.department_name}`;
+        const numberCell = document.createElement("td");
+        numberCell.textContent = index + 1;
 
-        item.appendChild(details);
+        const nameCell = document.createElement("td");
+        nameCell.textContent = course.course_name;
+
+        const codeCell = document.createElement("td");
+        codeCell.textContent = course.course_code;
+
+        const departmentCell = document.createElement("td");
+        departmentCell.textContent = course.department_name;
+
+        const actionCell = document.createElement("td");
 
         if (isAdmin) {
             const deleteButton = document.createElement("button");
@@ -318,15 +299,26 @@ function displayCourses() {
                     await loadCourses();
 
                     showMessage("Course deleted successfully.");
+
                 } catch (error) {
                     showMessage(error.message);
                 }
             });
 
-            item.appendChild(deleteButton);
+            actionCell.appendChild(deleteButton);
+        } else {
+            actionCell.textContent = "—";
         }
 
-        list.appendChild(item);
+        row.append(
+            numberCell,
+            nameCell,
+            codeCell,
+            departmentCell,
+            actionCell
+        );
+
+        list.appendChild(row);
     });
 }
 
@@ -367,24 +359,58 @@ if (courseForm) {
             });
 
             this.reset();
+
             await loadCourses();
 
             showMessage("Course added successfully.");
+
         } catch (error) {
             showMessage(error.message);
         }
     });
 }
 
-// Initial dashboard loading
-async function initializeDashboard() {
+// Sign Out
+const logoutButton = document.getElementById("logoutButton");
+
+if (logoutButton) {
+    logoutButton.addEventListener("click", async function() {
+        if (!confirm("Are you sure you want to sign out?")) {
+            return;
+        }
+
+        logoutButton.disabled = true;
+        logoutButton.textContent = "Signing out...";
+
+        try {
+            await apiRequest("/auth/logout", {
+                method: "POST"
+            });
+
+            window.location.href = "login.html";
+
+        } catch (error) {
+            console.error("Logout error:", error);
+
+            showMessage("Unable to sign out: " + error.message);
+
+            logoutButton.disabled = false;
+            logoutButton.textContent = "Sign Out";
+        }
+    });
+}
+
+// Initial page loading
+async function initializePage() {
     try {
         await loadCurrentUser();
+
         await loadDepartments();
         await loadCourses();
+
     } catch (error) {
-        console.error("Dashboard initialization failed:", error);
+        console.error("Page initialization failed:", error);
     }
 }
 
-initializeDashboard();
+initializePage();

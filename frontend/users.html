@@ -12,7 +12,7 @@
     <div class="dashboard-layout">
 
         <!-- SIDEBAR -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-logo">LT</div>
                 <h2>LabTrack</h2>
@@ -27,7 +27,9 @@
                 <a href="equipment.html" class="nav-link">Equipment</a>
                 <a href="bookings.html" class="nav-link">Bookings &amp; Schedule</a>
                 <a href="maintenance.html" class="nav-link">Maintenance</a>
-                <a href="reports.html" class="nav-link">Reports</a>
+                <a href="audit_logs.html" class="nav-link">Audit Logs</a>
+                <a href="reporting.html" class="nav-link">Departments &amp; Courses</a>
+                <a href="notifications.html" class="nav-link">Notifications</a>
             </nav>
 
             <div class="sidebar-bottom">
@@ -42,6 +44,16 @@
 
             <!-- HEADER -->
             <header class="topbar">
+
+                <button
+                    type="button"
+                    id="menuButton"
+                    class="menu-button"
+                    aria-expanded="true"
+                    aria-controls="sidebar">
+                    Menu
+                </button>
+
                 <div>
                     <h1>User Management</h1>
                     <p>Manage LabTrack user accounts and access roles.</p>
@@ -51,6 +63,7 @@
                     <div class="user-avatar">U</div>
                     <span id="userEmail">Loading...</span>
                 </div>
+
             </header>
 
             <!-- USER SUMMARY -->
@@ -171,6 +184,18 @@
     <!-- JAVASCRIPT -->
     <script src="js/api.js"></script>
     <script src="js/users.js"></script>
+    <script>
+        const menuButton = document.getElementById("menuButton");
+        const dashboardLayout = document.querySelector(".dashboard-layout");
 
+        menuButton.addEventListener("click", function () {
+            dashboardLayout.classList.toggle("sidebar-collapsed");
+
+            const isExpanded =
+                !dashboardLayout.classList.contains("sidebar-collapsed");
+
+            menuButton.setAttribute("aria-expanded", isExpanded);
+        });
+</script>
 </body>
 </html>

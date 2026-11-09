@@ -217,6 +217,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 isScheduleAvailable(schedule)
             );
 
+            const scheduleSelect = document.getElementById("scheduleSelect");
+
+            if (scheduleSelect) {
+                scheduleSelect.innerHTML = '<option value="">No specific schedule</option>';
+
+                matchingSchedules.forEach(schedule => {
+        const option = document.createElement("option");
+            option.value = schedule.schedule_id;
+            option.textContent =
+                `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`;
+            scheduleSelect.appendChild(option);
+         });
+        }   
+
             scheduleDisplay.innerHTML = "";
 
             if (!matchingSchedules.length) {

@@ -7,6 +7,7 @@ const cors = require("cors");
 const db = require("./config/db");
 
 // Route imports
+const path = require("path");
 const userRoutes = require("./routes/users");
 const labRoutes = require("./routes/laboratories");
 const authRoutes = require("./routes/auth");
@@ -31,6 +32,11 @@ const dashboardController = require("./controllers/dashboardController");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "../frontend"), {
+    index: false
+}));
 
 // Middleware
 app.use(cors({
@@ -76,12 +82,9 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/courses", courseRoutes);
 
-// Welcome Route
+// Open login page by default
 app.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Welcome to LabTrack!",
-        status: "running"
-    });
+    res.sendFile(path.join(__dirname, "../frontend/login.html"));
 });
 
 // Database Health Check

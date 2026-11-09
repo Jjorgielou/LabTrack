@@ -4,391 +4,360 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maintenance Module - LabTrack</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-[#112240] text-slate-300 flex flex-col justify-between min-h-screen fixed left-0 top-0">
-        <div>
-            <div class="p-6 flex items-center space-x-3">
-                <span class="bg-blue-600 text-white font-bold px-2.5 py-1.5 rounded-lg text-sm">LT</span>
-                <span class="text-white font-bold text-lg tracking-wide">LabTrack</span>
-            </div>
-            <nav class="mt-4 px-4 space-y-1 text-sm">
-                <a href="dashboard.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Dashboard</a>
-                <a href="users.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">User Management</a>
-                <a href="laboratories.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Laboratories</a>
-                <a href="equipment.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Equipment</a>
-                <a href="bookings.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Bookings & Schedule</a>
-                <a href="maintenance.html" class="block px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium">Maintenance</a>
-                <a href="reports.html" class="block px-4 py-2.5 rounded-lg hover:bg-slate-800">Reports</a>
-            </nav>
-        </div>
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-400">Xian (Maintenance Module)</div>
-    </aside>
+<body class="dashboard-page maintenance-page">
 
-    <!-- Main Content -->
-    <main class="ml-64 flex-1 flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">Maintenance Management</h1>
-                <p class="text-sm text-slate-500">Report issues, track maintenance work, and manage status values.</p>
+                <div class="sidebar-brand">
+                    <div class="brand-logo">LT</div>
+                    <h2>LabTrack</h2>
+                </div>
+
+                <p class="sidebar-label">MAIN MENU</p>
+
+                <nav class="sidebar-nav">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="users.html" class="nav-link">User Management</a>
+                    <a href="laboratories.html" class="nav-link">Laboratories</a>
+                    <a href="equipment.html" class="nav-link">Equipment</a>
+                    <a href="bookings.html" class="nav-link">Bookings &amp; Schedule</a>
+                    <a href="maintenance.html" class="nav-link active">Maintenance</a>
+                    <a href="audit_logs.html" class="nav-link">Audit Logs</a>
+                    <a href="reporting.html" class="nav-link">Departments &amp; Courses</a>
+                    <a href="notifications.html" class="nav-link">Notifications</a>
+                </nav>
             </div>
-            <div class="flex items-center space-x-3">
-                <span class="bg-blue-700 text-white font-semibold rounded-full w-9 h-9 flex items-center justify-center text-sm">X</span>
-                <span class="text-sm font-medium text-slate-700">xian@example.com</span>
+
+            <div class="sidebar-bottom">
+                <button type="button" id="logoutButton" class="logout-button">
+                    Sign Out
+                </button>
             </div>
-        </header>
+        </aside>
 
-        <div class="p-8 space-y-8 flex-1">
-            <!-- Maintenance Requests Section -->
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-slate-900">Maintenance Requests</h2>
-                    <button onclick="openCreateModal('issueModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Report Issue</button>
-                </div>
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="py-3 px-4">ID</th>
-                            <th class="py-3 px-4">Equipment ID</th>
-                            <th class="py-3 px-4">Problem Description</th>
-                            <th class="py-3 px-4">Status</th>
-                            <th class="py-3 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
-                </table>
-            </section>
+        <!-- Main Content -->
+        <main class="main-content">
 
-            <!-- Maintenance Records Section -->
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-slate-900">Maintenance Records</h2>
-                    <button onclick="openCreateModal('recordModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Log Work</button>
-                </div>
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="py-3 px-4">ID</th>
-                            <th class="py-3 px-4">Request ID</th>
-                            <th class="py-3 px-4">Work Performed</th>
-                            <th class="py-3 px-4">Technician</th>
-                            <th class="py-3 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
-                </table>
-            </section>
+            <!-- Top Header -->
+            <header class="topbar">
 
-            <!-- Maintenance Statuses Section -->
-            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-slate-900">Maintenance Statuses</h2>
-                    <button onclick="openCreateModal('statusModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Status</button>
+                <button
+                    type="button"
+                    id="menuButton"
+                    class="menu-button"
+                    aria-expanded="true"
+                    aria-controls="sidebar">
+                    Menu
+                </button>
+
+                <div class="maintenance-page-heading">
+                    <h1>Maintenance Management</h1>
+                    <p>Report issues, track maintenance work, and manage status values.</p>
                 </div>
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                            <th class="py-3 px-4">ID</th>
-                            <th class="py-3 px-4">Status Name</th>
-                            <th class="py-3 px-4">Description</th>
-                            <th class="py-3 px-4">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm text-slate-700"></tbody>
-                </table>
-            </section>
-        </div>
-    </main>
+
+                <!-- Logged-in User -->
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userEmail">Loading...</span>
+                </div>
+
+            </header>
+
+            <!-- Maintenance Content -->
+            <div class="maintenance-content">
+
+                <!-- Maintenance Requests -->
+                <section class="maintenance-card">
+
+                    <div class="maintenance-heading">
+                        <h2>Maintenance Requests</h2>
+
+                        <button
+                            type="button"
+                            class="maintenance-add-button"
+                            onclick="openCreateModal('issueModal')">
+                            + Report Issue
+                        </button>
+                    </div>
+
+                    <div class="maintenance-table-wrapper">
+                        <table class="maintenance-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Equipment ID</th>
+                                    <th>Problem Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="requests-tbody"></tbody>
+                        </table>
+                    </div>
+
+                </section>
+
+                <!-- Maintenance Records -->
+                <section class="maintenance-card">
+
+                    <div class="maintenance-heading">
+                        <h2>Maintenance Records</h2>
+
+                        <button
+                            type="button"
+                            class="maintenance-add-button"
+                            onclick="openCreateModal('recordModal')">
+                            + Log Work
+                        </button>
+                    </div>
+
+                    <div class="maintenance-table-wrapper">
+                        <table class="maintenance-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Request ID</th>
+                                    <th>Work Performed</th>
+                                    <th>Technician</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="records-tbody"></tbody>
+                        </table>
+                    </div>
+
+                </section>
+
+                <!-- Maintenance Statuses -->
+                <section class="maintenance-card">
+
+                    <div class="maintenance-heading">
+                        <h2>Maintenance Statuses</h2>
+
+                        <button
+                            type="button"
+                            class="maintenance-add-button"
+                            onclick="openCreateModal('statusModal')">
+                            + Add Status
+                        </button>
+                    </div>
+
+                    <div class="maintenance-table-wrapper">
+                        <table class="maintenance-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Status Name</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="statuses-tbody"></tbody>
+                        </table>
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+    </div>
 
     <!-- Report/Edit Issue Modal -->
-    <div id="issueModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 id="issueModalTitle" class="text-lg font-bold mb-4">Report Equipment Issue</h3>
-            <form id="issueForm" onsubmit="submitIssue(event)" class="space-y-4">
+    <div id="issueModal" class="maintenance-modal" aria-hidden="true">
+
+        <div class="maintenance-modal-content" role="dialog" aria-modal="true" aria-labelledby="issueModalTitle">
+
+            <h3 id="issueModalTitle" class="maintenance-modal-title">
+                Report Equipment Issue
+            </h3>
+
+            <form id="issueForm" onsubmit="submitIssue(event)">
+
                 <input type="hidden" id="edit_issue_id">
-                <div id="equipment_id_container">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Equipment ID</label>
-                    <input type="number" id="equipment_id" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+
+                <div class="maintenance-form-group" id="equipment_id_container">
+                    <label for="equipment_id">Equipment ID</label>
+
+                    <input
+                        type="number"
+                        id="equipment_id"
+                        min="1">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Problem Description</label>
-                    <textarea id="description" required rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+
+                <div class="maintenance-form-group">
+                    <label for="description">Problem Description</label>
+
+                    <textarea
+                        id="description"
+                        required
+                        rows="3"></textarea>
                 </div>
-                <div id="status_container" class="hidden">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status</label>
-                    <input type="text" id="issue_status" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+
+                <div class="maintenance-form-group" id="status_container">
+                    <label for="issue_status">Status</label>
+
+                    <input
+                        type="text"
+                        id="issue_status">
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="toggleModal('issueModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+
+                <div class="maintenance-modal-actions">
+
+                    <button
+                        type="button"
+                        class="maintenance-cancel-button"
+                        onclick="toggleModal('issueModal', false)">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="maintenance-save-button">
+                        Save
+                    </button>
+
                 </div>
+
             </form>
         </div>
     </div>
 
     <!-- Log/Edit Work Modal -->
-    <div id="recordModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 id="recordModalTitle" class="text-lg font-bold mb-4">Log Maintenance Work</h3>
-            <form id="recordForm" onsubmit="submitRecord(event)" class="space-y-4">
+    <div id="recordModal" class="maintenance-modal" aria-hidden="true">
+
+        <div class="maintenance-modal-content" role="dialog" aria-modal="true" aria-labelledby="recordModalTitle">
+
+            <h3 id="recordModalTitle" class="maintenance-modal-title">
+                Log Maintenance Work
+            </h3>
+
+            <form id="recordForm" onsubmit="submitRecord(event)">
+
                 <input type="hidden" id="edit_record_id">
-                <div id="rec_request_id_container">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Request ID</label>
-                    <input type="number" id="rec_request_id" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+
+                <div class="maintenance-form-group" id="rec_request_id_container">
+                    <label for="rec_request_id">Request ID</label>
+
+                    <input
+                        type="number"
+                        id="rec_request_id"
+                        min="1">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Work Performed</label>
-                    <textarea id="work_performed" required rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+
+                <div class="maintenance-form-group">
+                    <label for="work_performed">Work Performed</label>
+
+                    <textarea
+                        id="work_performed"
+                        required
+                        rows="3"></textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Technician</label>
-                    <input type="text" id="technician" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+
+                <div class="maintenance-form-group">
+                    <label for="technician">Technician</label>
+
+                    <input
+                        type="text"
+                        id="technician"
+                        required>
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="toggleModal('recordModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+
+                <div class="maintenance-modal-actions">
+
+                    <button
+                        type="button"
+                        class="maintenance-cancel-button"
+                        onclick="toggleModal('recordModal', false)">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="maintenance-save-button">
+                        Save
+                    </button>
+
                 </div>
+
             </form>
         </div>
     </div>
 
     <!-- Add/Edit Status Modal -->
-    <div id="statusModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 id="statusModalTitle" class="text-lg font-bold mb-4">Add Maintenance Status</h3>
-            <form id="statusForm" onsubmit="submitStatus(event)" class="space-y-4">
+    <div id="statusModal" class="maintenance-modal" aria-hidden="true">
+
+        <div class="maintenance-modal-content" role="dialog" aria-modal="true" aria-labelledby="statusModalTitle">
+
+            <h3 id="statusModalTitle" class="maintenance-modal-title">
+                Add Maintenance Status
+            </h3>
+
+            <form id="statusForm" onsubmit="submitStatus(event)">
+
                 <input type="hidden" id="edit_status_id">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Status Name</label>
-                    <input type="text" id="status_name" required class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600">
+
+                <div class="maintenance-form-group">
+                    <label for="status_name">Status Name</label>
+
+                    <input
+                        type="text"
+                        id="status_name"
+                        required>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Description</label>
-                    <textarea id="status_description" rows="3" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-600"></textarea>
+
+                <div class="maintenance-form-group">
+                    <label for="status_description">Description</label>
+
+                    <textarea
+                        id="status_description"
+                        rows="3"></textarea>
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="toggleModal('statusModal', false)" class="px-4 py-2 rounded-xl text-sm text-slate-600 hover:bg-slate-100">Cancel</button>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700">Save</button>
+
+                <div class="maintenance-modal-actions">
+
+                    <button
+                        type="button"
+                        class="maintenance-cancel-button"
+                        onclick="toggleModal('statusModal', false)">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="maintenance-save-button">
+                        Save
+                    </button>
+
                 </div>
+
             </form>
         </div>
     </div>
 
+    <!-- JavaScript Files -->
+    <script src="js/api.js"></script>
+    <script src="js/maintenance.js"></script>
+
+    <!-- Menu Button -->
     <script>
-        const API_BASE = 'http://localhost:3000/api/maintenance';
+        const menuButton = document.getElementById("menuButton");
+        const dashboardLayout = document.querySelector(".dashboard-layout");
 
-        let requestsData = [];
-        let recordsData = [];
-        let statusesData = [];
+        if (menuButton && dashboardLayout) {
+            menuButton.addEventListener("click", function () {
+                dashboardLayout.classList.toggle("sidebar-collapsed");
 
-        async function loadMaintenanceData() {
-            try {
-                const reqRes = await fetch(`${API_BASE}/requests`);
-                requestsData = await reqRes.json();
-                document.querySelector('section:nth-of-type(1) tbody').innerHTML = requestsData.map(r => `
-                    <tr>
-                        <td class="py-3 px-4 font-medium">${r.id}</td>
-                        <td class="py-3 px-4">${r.equipment_id}</td>
-                        <td class="py-3 px-4">${r.description}</td>
-                        <td class="py-3 px-4"><span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-semibold">${r.status}</span></td>
-                        <td class="py-3 px-4 space-x-2">
-                            <button onclick="openEditModal('requests', ${r.id})" class="text-blue-600 hover:underline">Edit</button>
-                            <button onclick="deleteItem('requests', ${r.id})" class="text-red-600 hover:underline">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
+                const isExpanded =
+                    !dashboardLayout.classList.contains("sidebar-collapsed");
 
-                const recRes = await fetch(`${API_BASE}/records`);
-                recordsData = await recRes.json();
-                document.querySelector('section:nth-of-type(2) tbody').innerHTML = recordsData.map(rc => `
-                    <tr>
-                        <td class="py-3 px-4 font-medium">${rc.id}</td>
-                        <td class="py-3 px-4">#${rc.request_id}</td>
-                        <td class="py-3 px-4">${rc.work_performed}</td>
-                        <td class="py-3 px-4">${rc.technician}</td>
-                        <td class="py-3 px-4 space-x-2">
-                            <button onclick="openEditModal('records', ${rc.id})" class="text-blue-600 hover:underline">Edit</button>
-                            <button onclick="deleteItem('records', ${rc.id})" class="text-red-600 hover:underline">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                const statRes = await fetch(`${API_BASE}/statuses`);
-                statusesData = await statRes.json();
-                document.querySelector('section:nth-of-type(3) tbody').innerHTML = statusesData.map(s => `
-                    <tr>
-                        <td class="py-3 px-4 font-medium">${s.id}</td>
-                        <td class="py-3 px-4 font-semibold text-amber-600">${s.name}</td>
-                        <td class="py-3 px-4">${s.description || ''}</td>
-                        <td class="py-3 px-4 space-x-2">
-                            <button onclick="openEditModal('statuses', ${s.id})" class="text-blue-600 hover:underline">Edit</button>
-                            <button onclick="deleteItem('statuses', ${s.id})" class="text-red-600 hover:underline">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
-
-            } catch (err) {
-                console.error('Error loading maintenance data:', err);
-            }
+                menuButton.setAttribute("aria-expanded", String(isExpanded));
+            });
         }
-
-        function toggleModal(modalId, show) {
-            document.getElementById(modalId).classList.toggle('hidden', !show);
-        }
-
-        function openCreateModal(modalId) {
-            if (modalId === 'issueModal') {
-                document.getElementById('issueModalTitle').innerText = 'Report Equipment Issue';
-                document.getElementById('edit_issue_id').value = '';
-                document.getElementById('issueForm').reset();
-                document.getElementById('equipment_id_container').style.display = 'block';
-                document.getElementById('status_container').style.display = 'none';
-            } else if (modalId === 'recordModal') {
-                document.getElementById('recordModalTitle').innerText = 'Log Maintenance Work';
-                document.getElementById('edit_record_id').value = '';
-                document.getElementById('recordForm').reset();
-                document.getElementById('rec_request_id_container').style.display = 'block';
-            } else if (modalId === 'statusModal') {
-                document.getElementById('statusModalTitle').innerText = 'Add Maintenance Status';
-                document.getElementById('edit_status_id').value = '';
-                document.getElementById('statusForm').reset();
-            }
-            toggleModal(modalId, true);
-        }
-
-        function openEditModal(type, id) {
-            if (type === 'requests') {
-                const item = requestsData.find(r => r.id === id);
-                if (!item) return;
-                document.getElementById('issueModalTitle').innerText = 'Edit Maintenance Request';
-                document.getElementById('edit_issue_id').value = item.id;
-                document.getElementById('description').value = item.description;
-                document.getElementById('issue_status').value = item.status;
-                document.getElementById('equipment_id_container').style.display = 'none';
-                document.getElementById('status_container').style.display = 'block';
-                toggleModal('issueModal', true);
-            } else if (type === 'records') {
-                const item = recordsData.find(r => r.id === id);
-                if (!item) return;
-                document.getElementById('recordModalTitle').innerText = 'Edit Maintenance Record';
-                document.getElementById('edit_record_id').value = item.id;
-                document.getElementById('work_performed').value = item.work_performed;
-                document.getElementById('technician').value = item.technician;
-                document.getElementById('rec_request_id_container').style.display = 'none';
-                toggleModal('recordModal', true);
-            } else if (type === 'statuses') {
-                const item = statusesData.find(s => s.id === id);
-                if (!item) return;
-                document.getElementById('statusModalTitle').innerText = 'Edit Maintenance Status';
-                document.getElementById('edit_status_id').value = item.id;
-                document.getElementById('status_name').value = item.name;
-                document.getElementById('status_description').value = item.description || '';
-                toggleModal('statusModal', true);
-            }
-        }
-
-        async function submitIssue(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit_issue_id').value;
-            
-            if (id) {
-                const description = document.getElementById('description').value;
-                const status = document.getElementById('issue_status').value;
-                await fetch(`${API_BASE}/requests/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ description, status })
-                });
-            } else {
-                const data = {
-                    equipment_id: document.getElementById('equipment_id').value,
-                    description: document.getElementById('description').value
-                };
-                await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-            }
-
-            toggleModal('issueModal', false);
-            loadMaintenanceData();
-        }
-
-        async function submitRecord(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit_record_id').value;
-
-            if (id) {
-                const work_performed = document.getElementById('work_performed').value;
-                const technician = document.getElementById('technician').value;
-                await fetch(`${API_BASE}/records/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ work_performed, technician })
-                });
-            } else {
-                const data = {
-                    request_id: document.getElementById('rec_request_id').value,
-                    work_performed: document.getElementById('work_performed').value,
-                    technician: document.getElementById('technician').value
-                };
-                await fetch(`${API_BASE}/records`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-            }
-
-            toggleModal('recordModal', false);
-            loadMaintenanceData();
-        }
-
-        async function submitStatus(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit_status_id').value;
-
-            if (id) {
-                const name = document.getElementById('status_name').value;
-                const description = document.getElementById('status_description').value;
-                await fetch(`${API_BASE}/statuses/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, description })
-                });
-            } else {
-                const data = {
-                    name: document.getElementById('status_name').value,
-                    description: document.getElementById('status_description').value
-                };
-                await fetch(`${API_BASE}/statuses`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-            }
-
-            toggleModal('statusModal', false);
-            loadMaintenanceData();
-        }
-
-        function deleteItem(type, id) {
-            if (confirm(`Are you sure you want to delete ${type} ID ${id}?`)) {
-                let endpoint = `${API_BASE}/${id}`;
-                if (type === 'records') endpoint = `${API_BASE}/records/${id}`;
-                if (type === 'statuses') endpoint = `${API_BASE}/statuses/${id}`;
-
-                fetch(endpoint, { method: 'DELETE' })
-                    .then(() => loadMaintenanceData());
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadMaintenanceData);
     </script>
+
 </body>
 </html>

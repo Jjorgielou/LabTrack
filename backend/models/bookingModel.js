@@ -37,6 +37,7 @@ async function getBookedDates(labId) {
 
 // CREATE BOOKING WITH SCHEDULE VALIDATION
 // Conflicting requests are saved as Rejected and recorded in conflict_logs.
+
 async function createBooking(bookingData) {
     const {
         requester_id,
@@ -67,27 +68,36 @@ async function createBooking(bookingData) {
             return { labNotFound: true };
         }
 
-        // Validate Rain's selected schedule.
+        // Find schedules for this laboratory and date.
         const [schedules] = await connection.query(
             `SELECT schedule_id, start_time, end_time, is_available
              FROM schedules
-             WHERE schedule_id = ?
-               AND lab_id = ?
+             WHERE lab_id = ?
                AND schedule_date = ?
-               AND is_available = 1
-               AND start_time <= ?
-               AND end_time >= ?
              FOR UPDATE`,
-            [
-                schedule_id,
-                lab_id,
-                requested_date,
-                start_time,
-                end_time
-            ]
+            [lab_id, requested_date]
         );
 
-        if (schedules.length === 0) {
+        // Find an available schedule that contains the requested time.
+        const matchingSchedule = schedules.find(schedule =>
+            Number(schedule.is_available) === 1 &&
+            schedule.start_time <= start_time &&
+            schedule.end_time >= end_time
+        );
+
+        // If a schedule ID was supplied, verify that it matches.
+        const hasScheduleId =
+            schedule_id !== undefined &&
+            schedule_id !== null &&
+            schedule_id !== "";
+
+        if (
+            hasScheduleId &&
+            (
+                !matchingSchedule ||
+                Number(matchingSchedule.schedule_id) !== Number(schedule_id)
+            )
+        ) {
             await connection.rollback();
             return { invalidSchedule: true };
         }
@@ -107,10 +117,16 @@ async function createBooking(bookingData) {
             [lab_id, requested_date, end_time, start_time]
         );
 
-        let statusName = "Approved";
+        let statusName;
 
-        // A conflicting request is saved as Rejected.
+        // Determine the initial booking status.
         if (conflicts.length > 0) {
+            statusName = "Rejected";
+        } else if (schedules.length === 0) {
+            statusName = "Pending";
+        } else if (matchingSchedule) {
+            statusName = "Approved";
+        } else {
             statusName = "Rejected";
         }
 
@@ -124,6 +140,11 @@ async function createBooking(bookingData) {
         if (statuses.length === 0) {
             throw new Error(`${statusName} booking status was not found.`);
         }
+
+        // Save the matching schedule ID, or NULL when no schedule applies.
+        const selectedScheduleId = matchingSchedule
+            ? matchingSchedule.schedule_id
+            : null;
 
         const [result] = await connection.query(
             `INSERT INTO bookings
@@ -141,7 +162,7 @@ async function createBooking(bookingData) {
             [
                 requester_id,
                 lab_id,
-                schedule_id,
+                selectedScheduleId,
                 requested_date,
                 start_time,
                 end_time,
@@ -150,7 +171,7 @@ async function createBooking(bookingData) {
             ]
         );
 
-        // Record the conflict while retaining the rejected booking.
+        // Record overlapping bookings while retaining the rejected request.
         if (conflicts.length > 0) {
             const conflictingBookingId = conflicts[0].booking_id;
 
@@ -178,6 +199,18 @@ async function createBooking(bookingData) {
 
         await connection.commit();
 
+        let message;
+
+        if (conflicts.length > 0) {
+            message = "Booking rejected because its requested time overlaps an existing booking.";
+        } else if (schedules.length === 0) {
+            message = "Booking submitted successfully and is pending Admin review because no schedule exists for this date.";
+        } else if (matchingSchedule) {
+            message = "Booking automatically approved because it fits an available schedule.";
+        } else {
+            message = "Booking rejected because the requested time does not fit an available schedule.";
+        }
+
         return {
             booking_id: result.insertId,
             insertId: result.insertId,
@@ -186,9 +219,7 @@ async function createBooking(bookingData) {
             conflicting_booking_id: conflicts.length > 0
                 ? conflicts[0].booking_id
                 : null,
-            message: conflicts.length > 0
-                ? "Booking rejected because its requested time overlaps an existing booking."
-                : "Booking automatically approved because it fits an available schedule."
+            message
         };
 
     } catch (error) {

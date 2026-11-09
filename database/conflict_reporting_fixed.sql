@@ -1,4 +1,3 @@
-
 -- Corrected by JJorgielou
 -- Based on Micha's original conflict_reporting.sql
 -- LabTrack Conflict Reporting Module

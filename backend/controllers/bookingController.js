@@ -90,7 +90,6 @@ exports.createBooking = async (req, res) => {
 
         if (
             lab_id === undefined ||
-            schedule_id === undefined ||
             !requested_date ||
             !start_time ||
             !end_time ||
@@ -105,11 +104,21 @@ exports.createBooking = async (req, res) => {
             );
         }
 
+        const hasScheduleId =
+            schedule_id !== undefined &&
+            schedule_id !== null &&
+            schedule_id !== "";
+
         if (
             !Number.isInteger(Number(lab_id)) ||
             Number(lab_id) < 1 ||
-            !Number.isInteger(Number(schedule_id)) ||
-            Number(schedule_id) < 1
+            (
+                hasScheduleId &&
+                (
+                    !Number.isInteger(Number(schedule_id)) ||
+                    Number(schedule_id) < 1
+                )
+            )
         ) {
             return fail(
                 res,
@@ -181,7 +190,7 @@ exports.createBooking = async (req, res) => {
         const bookingData = {
             requester_id: req.session.user.user_id,
             lab_id: Number(lab_id),
-            schedule_id: Number(schedule_id),
+            schedule_id: hasScheduleId ? Number(schedule_id) : null,
             requested_date,
             start_time: normalizedStart,
             end_time: normalizedEnd,
