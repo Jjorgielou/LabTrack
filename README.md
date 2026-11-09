@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+HEAD
 LabTrack
 Computer Laboratory Equipment and Schedule Tracker
 
@@ -70,8 +70,8 @@ Harvey
 
 Xian
 - maintenance
-- maintenance_requests, maintenance_records, maintainance_statuses
-- report issues, maintainance work, and status values
+- maintenance_requests, maintenance_records, maintenance_statuses
+- report issues, maintenance work, and status values
 
 Micha 
 - conflict and reporting support 
@@ -285,9 +285,9 @@ Xian
 
 maintenance
 
-maintenance\_requests, maintenance\_records, maintainance\_statuses
+maintenance\_requests, maintenance\_records, maintenance\_statuses
 
-report issues, maintainance work, and status values
+report issues, maintenance work, and status values
 
 Micha
 
@@ -431,4 +431,4 @@ DELETE /api/equipment-categories/:id - delete a category (Admin, Laboratory Staf
 
 Equipment page: Open frontend/login.html with VS Code Live Server at http://127.0.0.1:5500 (the backend only allows this address), sign in, then click Equipment. Students can view equipment but cannot add, edit or delete.
 
->>>>>>> 7b64f023e58cde519020d450a1a51b2459018029
+7b64f023e58cde519020d450a1a51b2459018029
