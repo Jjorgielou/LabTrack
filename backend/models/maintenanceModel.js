@@ -25,7 +25,13 @@ const Maintenance = {
     },
 
     getAllRecords: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_records');
+        const query = `
+            SELECT m.*, e.name AS equipment_name, u.name AS user_name
+            FROM maintenance_records m
+            LEFT JOIN equipment e ON m.equipment_id = e.id
+            LEFT JOIN users u ON m.user_id = u.id
+        `;
+        const [rows] = await db.query(query);
         return rows;
     },
     createRecord: async (data) => {
