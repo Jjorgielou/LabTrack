@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const scheduleMessage = document.getElementById("scheduleMessage");
     const bookingMessage = document.getElementById("bookingMessage");
     const bookingTableBody = document.getElementById("bookingTableBody");
+    const scheduleTableBody = document.getElementById("scheduleTableBody");
+    const scheduleListMessage = document.getElementById("scheduleListMessage");
 
     const STATUS_PENDING = 1;
     const STATUS_APPROVED = 2;
@@ -92,6 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function isAdmin() {
         return String(currentUser?.role || "").toLowerCase() === "admin";
+    }
+
+    function canManageSchedules() {
+    const role = String(currentUser?.role || "").toLowerCase();
+
+        return role === "admin" || role === "laboratory staff";
     }
 
     function isAvailableLaboratory(lab) {
@@ -179,93 +187,310 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function loadBookedDates() {
-        if (!labSelect.value) {
-            resetBookingFields();
-            return;
-        }
-
-        requestedDate.disabled = false;
-        requestedDate.min = getToday();
-
-        startTime.disabled = false;
-        endTime.disabled = false;
-    }
-
-    // DISPLAY SCHEDULES FOR REFERENCE
-    async function loadSchedulesForSelectedDate() {
-        const labId = Number(labSelect.value);
-        const selectedDate = requestedDate.value;
-
-        if (!scheduleDisplay) return;
-
-        if (!labId || !selectedDate) {
-            scheduleDisplay.textContent =
-                "Select a laboratory and date to view its schedules.";
-            return;
-        }
-
-        scheduleDisplay.textContent = "Loading schedules...";
+        // LOAD EXISTING SCHEDULES
+    async function loadScheduleList() {
+        if (!canManageSchedules() || !scheduleTableBody) return;
 
         try {
+            scheduleTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty">Loading schedules...</td>
+                </tr>
+            `;
+
             const response = await apiRequest("/schedules");
             const schedules = response.data || [];
 
-            const matchingSchedules = schedules.filter(schedule =>
-                Number(schedule.lab_id) === labId &&
-                getDate(schedule.schedule_date) === selectedDate &&
-                isScheduleAvailable(schedule)
-            );
+            scheduleTableBody.innerHTML = "";
 
-            const scheduleSelect = document.getElementById("scheduleSelect");
-
-            if (scheduleSelect) {
-                scheduleSelect.innerHTML = '<option value="">No specific schedule</option>';
-
-                matchingSchedules.forEach(schedule => {
-        const option = document.createElement("option");
-            option.value = schedule.schedule_id;
-            option.textContent =
-                `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`;
-            scheduleSelect.appendChild(option);
-         });
-        }   
-
-            scheduleDisplay.innerHTML = "";
-
-            if (!matchingSchedules.length) {
-                scheduleDisplay.textContent =
-                    "No available schedules exist for this date. Your booking will be submitted for Admin review if there are no time conflicts.";
+            if (!schedules.length) {
+                scheduleTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty">
+                            No laboratory schedules found.
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
-            const heading = document.createElement("p");
-            heading.textContent = "Available laboratory schedules:";
-            heading.style.fontWeight = "bold";
-            scheduleDisplay.appendChild(heading);
+            schedules.forEach(schedule => {
+                const row = document.createElement("tr");
 
-            const list = document.createElement("ul");
+                const values = [
+                    schedule.schedule_id,
+                    schedule.lab_name || `Laboratory ${schedule.lab_id}`,
+                    formatDate(schedule.schedule_date),
+                    formatTime(schedule.start_time),
+                    formatTime(schedule.end_time)
+                ];
 
-            matchingSchedules.forEach(schedule => {
-                const item = document.createElement("li");
-                item.textContent =
-                    `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`;
-                list.appendChild(item);
+                values.forEach(value => {
+                    const cell = document.createElement("td");
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+
+                const actionCell = document.createElement("td");
+                const deleteButton = document.createElement("button");
+
+                deleteButton.type = "button";
+                deleteButton.textContent = "Delete";
+                deleteButton.style.background = "#b94a48";
+                deleteButton.style.padding = "8px 12px";
+
+                deleteButton.addEventListener("click", () => {
+                    deleteSchedule(schedule.schedule_id, deleteButton);
+                });
+
+                actionCell.appendChild(deleteButton);
+                row.appendChild(actionCell);
+
+                scheduleTableBody.appendChild(row);
             });
 
-            scheduleDisplay.appendChild(list);
-
-            const note = document.createElement("small");
-            note.textContent =
-                "Schedules are shown for reference. Your booking status will be determined automatically based on the requested time.";
-            scheduleDisplay.appendChild(note);
-
         } catch (error) {
-            scheduleDisplay.textContent =
-                "Unable to load schedules. You may still submit your booking.";
-            console.error("Schedule loading error:", error);
+            scheduleTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty">
+                        Unable to load laboratory schedules.
+                    </td>
+                </tr>
+            `;
+
+            showMessage(
+                scheduleListMessage,
+                error.message || "Unable to load schedules.",
+                "error"
+            );
         }
     }
+
+    // DELETE A LABORATORY SCHEDULE
+    async function deleteSchedule(scheduleId, button) {
+        if (!canManageSchedules()) {
+            showMessage(
+                scheduleListMessage,
+                "You are not authorized to delete schedules.",
+                "error"
+            );
+            return;
+        }
+
+        const confirmed = confirm(
+            `Are you sure you want to delete schedule #${scheduleId}?\n\nSchedules linked to existing bookings cannot be deleted.`
+        );
+
+        if (!confirmed) return;
+
+        clearMessage(scheduleListMessage);
+
+        try {
+            button.disabled = true;
+            button.textContent = "Deleting...";
+
+            const response = await apiRequest(
+                `/schedules/${scheduleId}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+            showMessage(
+                scheduleListMessage,
+                response.message || "Schedule deleted successfully.",
+                "success"
+            );
+
+            await loadScheduleList();
+
+            // Refresh the booking schedule information if a date is selected.
+            if (labSelect.value && requestedDate.value) {
+                await loadSchedulesForSelectedDate();
+            }
+
+        } catch (error) {
+            showMessage(
+                scheduleListMessage,
+                error.message || "Unable to delete this schedule.",
+                "error"
+            );
+
+            await loadScheduleList();
+        }
+    }
+
+    
+async function loadBookedDates() {
+    if (!labSelect.value) {
+        resetBookingFields();
+        return;
+    }
+
+    requestedDate.disabled = false;
+    requestedDate.min = getToday();
+
+    startTime.disabled = false;
+    endTime.disabled = false;
+
+    try {
+        const response = await apiRequest(
+            `/bookings/booked-dates?lab_id=${encodeURIComponent(labSelect.value)}`
+        );
+
+        if (!response.success) {
+            throw new Error("Failed to load booked dates.");
+        }
+
+        const bookedDates = response.data.map(item => {
+    if (typeof item.requested_date === "string") {
+        return item.requested_date.slice(0, 10);
+    }
+
+    const date = new Date(item.requested_date);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+});
+
+        requestedDate.dataset.bookedDates = JSON.stringify(bookedDates);
+
+        console.log("Booked dates:", bookedDates);
+
+    } catch (error) {
+        console.error("Error loading booked dates:", error);
+        showMessage(
+            formMessage,
+            "Unable to retrieve booked dates. Please try again.",
+            "error"
+        );
+    }
+}
+
+
+    // DISPLAY SCHEDULES FOR REFERENCE
+    
+async function loadSchedulesForSelectedDate() {
+    const labId = Number(labSelect.value);
+    const selectedDate = requestedDate.value;
+
+    if (!scheduleDisplay) return;
+
+    if (!labId || !selectedDate) {
+        scheduleDisplay.textContent =
+            "Select a laboratory and date to view its schedules.";
+        return;
+    }
+
+    scheduleDisplay.textContent = "Loading schedules...";
+
+    try {
+        // Load laboratory schedules
+        const scheduleResponse = await apiRequest("/schedules");
+        const schedules = scheduleResponse.data || [];
+
+        // Find schedules for the selected laboratory and date
+        const matchingSchedules = schedules.filter(schedule =>
+            Number(schedule.lab_id) === labId &&
+            getDate(schedule.schedule_date) === selectedDate &&
+            isScheduleAvailable(schedule)
+        );
+
+        // Load booked dates
+        const bookingResponse = await apiRequest(
+            `/bookings/booked-dates?lab_id=${labId}`
+        );
+
+        const bookedDates = (bookingResponse.data || []).map(item =>
+            typeof item.requested_date === "string"
+                ? item.requested_date.slice(0, 10)
+                : new Date(item.requested_date).toISOString().slice(0, 10)
+        );
+
+        const hasExistingBookings = bookedDates.includes(selectedDate);
+
+        // Update optional schedule dropdown
+        const scheduleSelect = document.getElementById("scheduleSelect");
+
+        if (scheduleSelect) {
+            scheduleSelect.innerHTML =
+                '<option value="">No specific schedule</option>';
+
+            matchingSchedules.forEach(schedule => {
+                const option = document.createElement("option");
+                option.value = schedule.schedule_id;
+                option.textContent =
+                    `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`;
+
+                scheduleSelect.appendChild(option);
+            });
+        }
+
+        // Clear previous information
+        scheduleDisplay.innerHTML = "";
+
+        // Display existing booking information
+        const bookingNotice = document.createElement("p");
+
+        if (hasExistingBookings) {
+            bookingNotice.textContent =
+                "This date already has Pending or Approved bookings. You may still request another time, provided it does not overlap.";
+        } else {
+            bookingNotice.textContent =
+                "No Pending or Approved bookings currently exist for this date.";
+        }
+
+        bookingNotice.style.fontWeight = "bold";
+        scheduleDisplay.appendChild(bookingNotice);
+
+        // Display available schedules
+        if (!matchingSchedules.length) {
+            const message = document.createElement("p");
+
+            message.textContent =
+                "No available laboratory schedules exist for this date. Your booking will be submitted for Admin review if there are no time conflicts.";
+
+            scheduleDisplay.appendChild(message);
+            return;
+        }
+
+        const heading = document.createElement("p");
+        heading.textContent = "Available laboratory schedules:";
+        heading.style.fontWeight = "bold";
+
+        scheduleDisplay.appendChild(heading);
+
+        const list = document.createElement("ul");
+
+        matchingSchedules.forEach(schedule => {
+            const item = document.createElement("li");
+
+            item.textContent =
+                `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`;
+
+            list.appendChild(item);
+        });
+
+        scheduleDisplay.appendChild(list);
+
+        const note = document.createElement("small");
+
+        note.textContent =
+            "Schedules are shown for reference. Your booking status will be determined automatically based on the requested time.";
+
+        scheduleDisplay.appendChild(note);
+
+    } catch (error) {
+        scheduleDisplay.textContent =
+            "Unable to load schedule information. You may still submit your booking.";
+
+        console.error("Schedule loading error:", error);
+    }
+}
+
 
     function validateSelectedDate() {
         const selectedDate = requestedDate.value;
@@ -349,6 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             scheduleForm.reset();
+            await loadScheduleList();
 
             if (
                 Number(labSelect.value) === labId &&
@@ -660,6 +886,7 @@ document.addEventListener("DOMContentLoaded", () => {
             startTime.disabled = true;
             endTime.disabled = true;
 
+            await loadScheduleList();
             await loadBookings();
 
         } catch (error) {

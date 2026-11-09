@@ -38,3 +38,4 @@ ON DUPLICATE KEY UPDATE
     capacity = VALUES(capacity),
     type_id = VALUES(type_id),
     status_id = VALUES(status_id);
+

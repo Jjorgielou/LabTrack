@@ -307,7 +307,36 @@
                         Create Laboratory Schedule
                     </button>
 
-                </form>
+                                </form>
+
+                <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e3e7ed;">
+
+                <h2>Existing Laboratory Schedules</h2>
+
+                <div id="scheduleListMessage" class="message"></div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Schedule ID</th>
+                                <th>Laboratory</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="scheduleTableBody">
+                            <tr>
+                                <td colspan="6" class="empty">
+                                    Loading schedules...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
             </section>
 
@@ -352,7 +381,7 @@
                         </div>
 
                         <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="scheduleDisplay">Laboratory Schedule Information</label>
+                            <p><strong>Laboratory Schedule Information</strong></p>
                             <div id="scheduleDisplay" class="info">
                                 Select a laboratory and date to view its schedules.
                             </div>
@@ -414,7 +443,7 @@
 
                         <tbody id="bookingTableBody">
                             <tr>
-                                <td colspan="7" class="empty">Loading bookings...</td>
+                                <td colspan="8" class="empty">Loading bookings...</td>
                             </tr>
                         </tbody>
                     </table>

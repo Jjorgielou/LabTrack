@@ -20,4 +20,11 @@ router.post(
     scheduleController.createSchedule
 );
 
+router.delete(
+    "/:schedule_id",
+    requireAuth,
+    requireRole("Admin", "Laboratory Staff"),
+    scheduleController.deleteSchedule
+);
+
 module.exports = router;

@@ -1,6 +1,7 @@
 const {
     getAllSchedules,
-    createSchedule
+    createSchedule,
+    deleteSchedule
 } = require("../models/scheduleModel");
 
 function isValidDate(date) {
@@ -164,6 +165,61 @@ exports.createSchedule = async (req, res) => {
             error: {
                 code: "SERVER_ERROR",
                 message: "Failed to create schedule."
+            }
+        });
+    }
+};
+
+
+exports.deleteSchedule = async (req, res) => {
+    try {
+        const scheduleId = req.params.schedule_id;
+
+        if (!/^[1-9]\d*$/.test(scheduleId)) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    code: "VALIDATION_ERROR",
+                    message: "Schedule ID must be a positive integer."
+                }
+            });
+        }
+
+        const result = await deleteSchedule(Number(scheduleId));
+
+        if (result.notFound) {
+            return res.status(404).json({
+                success: false,
+                error: {
+                    code: "SCHEDULE_NOT_FOUND",
+                    message: "Schedule not found."
+                }
+            });
+        }
+
+        if (result.hasBookings) {
+            return res.status(409).json({
+                success: false,
+                error: {
+                    code: "SCHEDULE_HAS_BOOKINGS",
+                    message: "This schedule cannot be deleted because it is linked to existing bookings."
+                }
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Schedule deleted successfully."
+        });
+
+    } catch (err) {
+        console.error("Error deleting schedule:", err);
+
+        return res.status(500).json({
+            success: false,
+            error: {
+                code: "SERVER_ERROR",
+                message: "Failed to delete schedule."
             }
         });
     }

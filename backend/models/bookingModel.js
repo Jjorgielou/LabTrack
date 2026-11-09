@@ -31,9 +31,24 @@ async function getAllBookings(requesterId = null) {
 
 // GET BOOKED DATES
 // Dates remain selectable; conflicts are checked during submission.
+
 async function getBookedDates(labId) {
-    return [];
+    const [rows] = await pool.query(
+        `SELECT DISTINCT 
+            DATE_FORMAT(b.requested_date, '%Y-%m-%d') AS requested_date
+         FROM bookings b
+         INNER JOIN booking_statuses bs
+            ON b.status_id = bs.status_id
+         WHERE b.lab_id = ?
+           AND bs.status_name IN ('Pending', 'Approved')
+         ORDER BY requested_date ASC`,
+        [labId]
+    );
+
+    return rows;
 }
+
+
 
 // CREATE BOOKING WITH SCHEDULE VALIDATION
 // Conflicting requests are saved as Rejected and recorded in conflict_logs.
