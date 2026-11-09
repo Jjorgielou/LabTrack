@@ -114,9 +114,9 @@ Xian
 
 maintenance
 
-maintenance\_requests, maintenance\_records, maintainance\_statuses
+maintenance\_requests, maintenance\_records, maintenance\_statuses, maintenance\_reports,
 
-report issues, maintainance work, and status values
+report issues, maintenance work, and status values
 
 Micha
 
