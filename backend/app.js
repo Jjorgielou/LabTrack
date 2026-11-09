@@ -19,7 +19,7 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 
 const equipmentRoutes = require("./routes/equipment");
 const equipmentCategoryRoutes = require("./routes/equipmentCategories");
-const maintenanceRoutes = require("./routes/maintenanceroutes");
+const maintenanceroutes = require("./routes/maintenanceroutes");
 const departmentRoutes = require("./routes/departmentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 
@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, "../frontend"), {
 
 // Middleware
 app.use(cors({
-    origin: "http://127.0.0.1:5500",
+    origin: true, // Dynamically allows the request origin (Postman, localhost, etc.)
     credentials: true
 }));
 
@@ -78,7 +78,7 @@ app.use("/api/schedules", scheduleRoutes);
 
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/equipment-categories", equipmentCategoryRoutes);
-app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/maintenance", maintenanceroutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/courses", courseRoutes);
 

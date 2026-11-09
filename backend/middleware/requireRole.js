@@ -1,30 +1,17 @@
-
-function requireRole(...allowedRoles) {
+module.exports = (allowedRoles) => {
     return (req, res, next) => {
-        console.log("=== ROLE CHECK ===");
-        console.log("URL:", req.originalUrl);
-        console.log("METHOD:", req.method);
-        console.log("SESSION USER:", req.session?.user);
-        console.log("ACTUAL ROLE:", req.session?.user?.role);
-        console.log("ALLOWED ROLES:", allowedRoles);
-
         if (!req.session || !req.session.user) {
-            return res.status(401).json({
-                message: "Unauthorized. Please log in first."
-            });
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        if (!allowedRoles.includes(req.session.user.role)) {
-            console.log("ACCESS DENIED");
+        const roleMap = { 1: 'Admin', 2: 'Laboratory Staff', 3: 'Student' };
+        const rawRole = req.session.user.role || req.session.user.role_id;
+        const userRole = roleMap[rawRole] || rawRole;
 
-            return res.status(403).json({
-                message: "Forbidden. You do not have permission."
-            });
+        if (allowedRoles.includes(userRole)) {
+            return next();
         }
 
-        console.log("ACCESS GRANTED");
-        next();
+        return res.status(403).json({ message: 'Forbidden. You do not have permission.' });
     };
-}
-
-module.exports = requireRole;
+};
