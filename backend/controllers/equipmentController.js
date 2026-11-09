@@ -91,6 +91,16 @@ async function getUnavailableEquipment(req, res) {
     }
 }
 
+// Coverage report: unassigned equipment and labs with no equipment
+async function getEquipmentCoverage(req, res) {
+    try {
+        const coverage = await equipmentModel.getEquipmentCoverage();
+        ok(res, coverage);
+    } catch (err) {
+        handleDbError(res, err);
+    }
+}
+
 async function getEquipmentById(req, res) {
     const id = parseId(req);
     if (!id) return fail(res, "BAD_REQUEST", "Invalid equipment id.", 400);
@@ -163,6 +173,7 @@ async function deleteEquipment(req, res) {
 module.exports = {
     getAllEquipment,
     getUnavailableEquipment,
+    getEquipmentCoverage,
     getEquipmentById,
     createEquipment,
     updateEquipment,

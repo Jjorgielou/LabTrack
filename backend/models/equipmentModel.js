@@ -48,6 +48,55 @@ async function getUnavailableEquipment() {
     return rows;
 }
 
+// Coverage report: equipment with no lab AND labs with no equipment, in one result.
+// MySQL has no FULL OUTER JOIN, so we combine a LEFT JOIN and a RIGHT JOIN with UNION.
+async function getEquipmentCoverage() {
+    const [rows] = await db.query(
+        `SELECT
+            equipment.equipment_id,
+            equipment.equipment_name,
+            equipment.asset_tag,
+            equipment.status AS equipment_status,
+            laboratories.lab_id,
+            laboratories.lab_name,
+            laboratories.location,
+            CASE
+                WHEN laboratories.lab_id IS NULL THEN 'Unassigned equipment'
+                WHEN equipment.equipment_id IS NULL THEN 'Lab with no equipment'
+                ELSE 'Assigned'
+            END AS coverage_status
+         FROM equipment
+         LEFT JOIN equipment_assignments
+            ON equipment_assignments.equipment_id = equipment.equipment_id
+           AND equipment_assignments.unassigned_at IS NULL
+         LEFT JOIN laboratories
+            ON laboratories.lab_id = equipment_assignments.lab_id
+
+         UNION
+
+         SELECT
+            equipment.equipment_id,
+            equipment.equipment_name,
+            equipment.asset_tag,
+            equipment.status AS equipment_status,
+            laboratories.lab_id,
+            laboratories.lab_name,
+            laboratories.location,
+            CASE
+                WHEN laboratories.lab_id IS NULL THEN 'Unassigned equipment'
+                WHEN equipment.equipment_id IS NULL THEN 'Lab with no equipment'
+                ELSE 'Assigned'
+            END AS coverage_status
+         FROM equipment
+         LEFT JOIN equipment_assignments
+            ON equipment_assignments.equipment_id = equipment.equipment_id
+           AND equipment_assignments.unassigned_at IS NULL
+         RIGHT JOIN laboratories
+            ON laboratories.lab_id = equipment_assignments.lab_id`
+    );
+
+    return rows;
+}
 // Create equipment
 async function createEquipment(categoryId, equipmentName, assetTag, equipmentCondition, status) {
     const [result] = await db.query(
@@ -87,6 +136,7 @@ module.exports = {
     getAllEquipment,
     getEquipmentById,
     getUnavailableEquipment,
+    getEquipmentCoverage,
     createEquipment,
     updateEquipment,
     deleteEquipment

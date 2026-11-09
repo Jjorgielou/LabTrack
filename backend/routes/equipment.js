@@ -11,6 +11,7 @@ router.use(requireAuth);
 // Any logged-in user can read
 router.get("/", ctrl.getAllEquipment);
 router.get("/unavailable", ctrl.getUnavailableEquipment);
+router.get("/coverage", ctrl.getEquipmentCoverage); // must stay above "/:id"
 router.get("/:id", ctrl.getEquipmentById);
 
 // Only Admin and Laboratory Staff can change data
