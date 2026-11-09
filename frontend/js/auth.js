@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    // LOGIN
     const loginForm = document.getElementById("loginForm");
 
     if (loginForm) {
@@ -12,8 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const message = document.getElementById("loginMessage");
             const button = loginForm.querySelector("button[type='submit']");
 
-            message.textContent = "";
-            message.style.color = "#dc2626";
+            if (message) {
+                message.textContent = "";
+                message.style.color = "#dc2626";
+            }
 
             button.disabled = true;
             button.textContent = "Signing in...";
@@ -24,13 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ email, password })
                 });
 
-                message.style.color = "#16a34a";
-                message.textContent = data.message || "Login successful!";
+                if (message) {
+                    message.style.color = "#16a34a";
+                    message.textContent = data.message || "Login successful!";
+                }
 
                 window.location.href = "dashboard.html";
 
             } catch (error) {
-                message.textContent = error.message || "Unable to log in.";
+                console.error("Login Error:", error);
+                if (message) {
+                    message.textContent = error.message || "Unable to log in.";
+                }
             } finally {
                 button.disabled = false;
                 button.textContent = "Sign In";
@@ -38,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // REGISTRATION
     const registerForm = document.getElementById("registerForm");
 
     if (registerForm) {
@@ -53,8 +57,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const message = document.getElementById("registerMessage");
             const button = registerForm.querySelector("button[type='submit']");
 
-            message.textContent = "";
-            message.style.color = "#dc2626";
+            if (message) {
+                message.textContent = "";
+                message.style.color = "#dc2626";
+            }
 
             button.disabled = true;
             button.textContent = "Creating account...";
@@ -70,8 +76,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
 
-                message.style.color = "#16a34a";
-                message.textContent = data.message || "Account created successfully!";
+                if (message) {
+                    message.style.color = "#16a34a";
+                    message.textContent = data.message || "Account created successfully!";
+                }
 
                 registerForm.reset();
 
@@ -80,12 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }, 1500);
 
             } catch (error) {
-                message.textContent = error.message || "Unable to register.";
+                if (message) {
+                    message.textContent = error.message || "Unable to register.";
+                }
             } finally {
                 button.disabled = false;
                 button.textContent = "Create Account";
             }
         });
     }
-
 });
