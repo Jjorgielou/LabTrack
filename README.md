@@ -247,6 +247,7 @@ All routes are prefixed with `/api`. Authenticated endpoints require a valid ses
 | Method | Route | Description | Owner |
 | --- | --- | --- | --- |
 | `GET`    | `/api/equipment` | List all equipment (with category, lab assignment via JOIN) | Harvey |
+| `GET`    | `/api/equipment/coverage` | Coverage report: unassigned equipment and labs with no equipment (simulated FULL OUTER JOIN: LEFT JOIN UNION RIGHT JOIN) | Harvey |
 | `GET`    | `/api/equipment/:id` | Get equipment detail | Harvey |
 | `POST`   | `/api/equipment` | Add new equipment | Harvey |
 | `PUT`    | `/api/equipment/:id` | Update equipment details / condition / status | Harvey |
@@ -308,6 +309,7 @@ All routes are prefixed with `/api`. Authenticated endpoints require a valid ses
 ### API routes (all require login):
 - GET /api/equipment - list all equipment
 - GET /api/equipment/unavailable - equipment that is unavailable, under maintenance or damaged
+- GET /api/equipment/coverage - coverage report: unassigned equipment and labs with no equipment (simulated FULL OUTER JOIN using LEFT JOIN UNION RIGHT JOIN)
 - GET /api/equipment/:id - one equipment item
 - POST /api/equipment - add equipment (Admin, Laboratory Staff)
 - PUT /api/equipment/:id - edit equipment (Admin, Laboratory Staff)
@@ -330,6 +332,7 @@ Each member owns one join report exposed through a GET endpoint and rendered on 
 | Laboratory Details Report | Tonia | `GET /api/laboratories` | `laboratories.html` | INNER JOIN | `laboratories` INNER JOIN `lab_types` INNER JOIN `lab_statuses` |
 | Booking Schedule Report | Rain | `GET /api/bookings` | `bookings.html` | INNER JOIN | `bookings` INNER JOIN `booking_statuses` INNER JOIN `laboratories` INNER JOIN `schedules` |
 | Equipment Inventory Report | Harvey | `GET /api/equipment` | `equipment.html` | LEFT JOIN | `equipment` LEFT JOIN `equipment_categories` LEFT JOIN `equipment_assignments` LEFT JOIN `laboratories` |
+| Equipment Coverage Report | Harvey | `GET /api/equipment/coverage` | none yet (API only) | Simulated FULL OUTER JOIN (LEFT JOIN UNION RIGHT JOIN) | `equipment` LEFT JOIN `equipment_assignments` LEFT JOIN `laboratories` UNION `equipment` RIGHT JOIN `equipment_assignments` RIGHT JOIN `laboratories` |
 | Maintenance History Report | Xian | `GET /api/maintenance/records` | `maintenance.html` | LEFT JOIN | `maintenance_records` LEFT JOIN `maintenance_requests` LEFT JOIN `equipment` LEFT JOIN `maintenance_statuses` |
 | Conflict & Notification Report | Micha | `GET /api/conflicts` | `conflicts.html` | LEFT JOIN | `conflict_logs` LEFT JOIN `bookings` LEFT JOIN `laboratories` LEFT JOIN `notifications` |
 
