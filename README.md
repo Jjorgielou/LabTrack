@@ -463,8 +463,6 @@ LabTrack/
 │   ├── reporting.html                        # Reports
 │   ├── reports.html                          # Report views
 │   └── users.html                            # User management
-├── package.json                              # Project dependencies
-├── package-lock.json                         # Dependency lock file
 ├── .gitignore                                # node_modules, .env, .vscode
 └── README.md                                 # Roster, Ownership Matrix, Setup instructions
 ```
