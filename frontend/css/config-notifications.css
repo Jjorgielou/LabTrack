@@ -1,0 +1,323 @@
+/* NOTIFICATIONS PAGE
+   Shared layout styles come from style.css */
+
+/* Page heading */
+.dashboard-page #content .page {
+    width: 100%;
+    color: #263445;
+}
+
+.dashboard-page #content .page > h2 {
+    color: #173b63;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.dashboard-page #content .page > p {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+/* Notification sections */
+.dashboard-page .notification-section {
+    background: #ffffff;
+    padding: 24px;
+    margin-top: 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-page .notification-section h3 {
+    color: #173b63;
+    font-size: 19px;
+    margin-bottom: 18px;
+}
+
+/* Form layout */
+.dashboard-page .notification-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.dashboard-page .notification-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.dashboard-page .notification-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.dashboard-page .notification-form-group label {
+    color: #263445;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dashboard-page .notification-form-group input,
+.dashboard-page .notification-form-group textarea {
+    width: 100%;
+    padding: 11px 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    color: #263445;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+}
+
+.dashboard-page .notification-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.dashboard-page .notification-form-group input:focus,
+.dashboard-page .notification-form-group textarea:focus {
+    border-color: #285681;
+    box-shadow: 0 0 0 2px rgba(40, 86, 129, 0.12);
+}
+
+/* Send notification button */
+.dashboard-page .notification-primary-button {
+    align-self: flex-start;
+    padding: 11px 18px;
+    color: #ffffff;
+    background: #173b63;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.dashboard-page .notification-primary-button:hover {
+    background: #285681;
+}
+
+.dashboard-page .notification-primary-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Status messages */
+.dashboard-page .notification-message {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Table */
+.dashboard-page .notification-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dashboard-page .notification-table {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.dashboard-page .notification-table th,
+.dashboard-page .notification-table td {
+    padding: 13px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+}
+
+.dashboard-page .notification-table th {
+    color: #173b63;
+    background: #f1f5f9;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dashboard-page .notification-table td {
+    color: #263445;
+}
+
+.dashboard-page .notification-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Empty table message */
+.dashboard-page .notification-empty {
+    padding: 25px;
+    text-align: center;
+    color: #64748b !important;
+}
+
+/* Delete button */
+.dashboard-page .notification-danger-button {
+    padding: 7px 12px;
+    color: #ffffff;
+    background: #dc3545;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.dashboard-page .notification-danger-button:hover {
+    background: #b02a37;
+}
+
+.dashboard-page .notification-danger-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Topbar email spacing */
+.dashboard-page .topbar {
+    gap: 15px;
+}
+
+.dashboard-page .topbar h2 {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-page .topbar .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.dashboard-page .topbar .user-info span {
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+    .dashboard-page .notification-section {
+        padding: 16px;
+    }
+
+    .dashboard-page .notification-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-page .notification-form-group.full-width {
+        grid-column: auto;
+    }
+
+    .dashboard-page .notification-primary-button {
+        width: 100%;
+    }
+
+    .dashboard-page .topbar {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-page .topbar h2 {
+        font-size: 18px;
+    }
+
+    .dashboard-page .topbar .user-info {
+        margin-left: auto;
+    }
+}
+
+/*  NOTIFICATIONS PAGE BACKGROUND & FINISH */
+
+/* Main page background */
+body.dashboard-page {
+    background-color: #f1f5f9;
+}
+
+.dashboard-page .main-content {
+    background-color: #f1f5f9;
+    min-height: 100vh;
+}
+
+.dashboard-page #content {
+    padding: 30px;
+    background-color: #f1f5f9;
+}
+
+/* Page introduction */
+.dashboard-page #content .page > h2 {
+    font-size: 23px;
+    font-weight: 700;
+    color: #173b63;
+    margin-bottom: 8px;
+}
+
+.dashboard-page #content .page > p {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+/* White management cards */
+.dashboard-page .notification-section {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.dashboard-page .notification-section h3 {
+    font-size: 19px;
+    font-weight: 600;
+    color: #173b63;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 22px;
+}
+
+/* Table container */
+.dashboard-page .notification-table-wrapper {
+    margin-top: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+}
+
+/* Table header */
+.dashboard-page .notification-table th {
+    background-color: #f1f5f9;
+    color: #173b63;
+    font-weight: 600;
+}
+
+/* Table rows */
+.dashboard-page .notification-table td {
+    background-color: #ffffff;
+}
+
+.dashboard-page .notification-table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* Form spacing */
+.dashboard-page .notification-form-grid {
+    row-gap: 20px;
+}
+
+.dashboard-page .notification-form-group label {
+    margin-bottom: 2px;
+}
+
+/* Responsive spacing */
+@media (max-width: 700px) {
+    .dashboard-page #content {
+        padding: 20px 15px;
+    }
+
+    .dashboard-page .notification-section {
+        padding: 18px;
+    }
+}

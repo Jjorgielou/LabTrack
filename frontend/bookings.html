@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LabTrack | Bookings &amp; Schedules</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* BOOKINGS PAGE CONTENT */
+
+        .booking-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .booking-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .booking-header > div {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .booking-header h1 {
+            margin: 0;
+            color: #173b63;
+        }
+
+        .booking-header p {
+            margin-top: 6px;
+            color: #64748b;
+        }
+
+        .booking-card {
+            background: white;
+            padding: 24px;
+            margin-bottom: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+        }
+
+        .booking-card h2 {
+            margin-top: 0;
+            color: #294b70;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .booking-card label {
+            font-weight: bold;
+            margin-bottom: 7px;
+        }
+
+        .booking-card input,
+        .booking-card select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccd5df;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .booking-card input:disabled,
+        .booking-card select:disabled {
+            background: #edf0f3;
+            cursor: not-allowed;
+        }
+
+        .booking-card button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #557fad;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .booking-card button:hover {
+            background: #3e6690;
+        }
+
+        .booking-card button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .primary-button {
+            width: 100%;
+            margin-top: 18px;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+        }
+
+        .success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background: #e8f1fb;
+            color: #294b70;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .booking-card table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .booking-card th,
+        .booking-card td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e3e7ed;
+        }
+
+        .booking-card th {
+            background: #557fad;
+            color: white;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media(max-width: 650px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-card {
+                padding: 16px;
+            }
+
+            .booking-header {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-logo">LT</div>
+            <h2>LabTrack</h2>
+        </div>
+
+        <p class="sidebar-label">MAIN MENU</p>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+            <a href="users.html" class="nav-link">User Management</a>
+            <a href="laboratories.html" class="nav-link">Laboratories</a>
+            <a href="equipment.html" class="nav-link">Equipment</a>
+            <a href="bookings.html" class="nav-link active">Bookings &amp; Schedule</a>
+            <a href="maintenance.html" class="nav-link">Maintenance</a>
+            <a href="audit_logs.html" class="nav-link">Audit Logs</a>
+            <a href="reporting.html" class="nav-link">Departments &amp; Courses</a>
+            <a href="notifications.html" class="nav-link">Notifications</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button id="logoutButton" class="logout-button">Sign Out</button>
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <header class="topbar booking-header">
+
+            <button
+                type="button"
+                id="menuButton"
+                class="menu-button"
+                aria-expanded="true"
+                aria-controls="sidebar">
+                Menu
+            </button>
+
+            <div>
+                <h1>Bookings &amp; Schedules</h1>
+                <p>Manage laboratory schedules and booking requests.</p>
+            </div>
+
+        </header>
+
+        <div class="booking-container">
+
+            <div id="pageMessage" class="message"></div>
+
+            <!-- ADMIN AND LABORATORY STAFF SCHEDULE MANAGEMENT -->
+            <section class="booking-card hidden" id="scheduleManagement">
+
+                <h2>Optional Schedule Management</h2>
+
+                <div class="info">
+                    Admins and Laboratory Staff can create laboratory schedules when needed.
+                    Creating a schedule every day is not required. Booking requests made
+                    on dates without schedules will be sent to the Admin for review.
+                </div>
+
+                <div id="scheduleMessage" class="message"></div>
+
+                <form id="scheduleForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="scheduleLab">Laboratory</label>
+                            <select id="scheduleLab" required>
+                                <option value="">Select a laboratory</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scheduleDate">Schedule Date</label>
+                            <input type="date" id="scheduleDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scheduleStart">Start Time</label>
+                            <input type="time" id="scheduleStart" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scheduleEnd">End Time</label>
+                            <input type="time" id="scheduleEnd" required>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="primary-button" id="createScheduleButton">
+                        Create Laboratory Schedule
+                    </button>
+
+                                </form>
+
+                <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e3e7ed;">
+
+                <h2>Existing Laboratory Schedules</h2>
+
+                <div id="scheduleListMessage" class="message"></div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Schedule ID</th>
+                                <th>Laboratory</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="scheduleTableBody">
+                            <tr>
+                                <td colspan="6" class="empty">
+                                    Loading schedules...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+            <!-- BOOKING REQUEST -->
+            <section class="booking-card">
+
+                <h2>Request a Laboratory Booking</h2>
+
+                <div class="info">
+                    Select a laboratory and any future date. You may choose your own
+                    start and end times. Multiple bookings are allowed on the same day
+                    as long as their time periods do not overlap.
+
+                    <br><br>
+
+                    <strong>Automatic booking decisions:</strong>
+
+                    <ul>
+                        <li>Time fits an available laboratory schedule: Automatically Approved.</li>
+                        <li>Schedules exist, but your requested time does not fit: Rejected.</li>
+                        <li>No schedule exists for that date: Pending Admin review.</li>
+                        <li>Overlapping bookings: Rejected.</li>
+                    </ul>
+                </div>
+
+                <div id="formMessage" class="message"></div>
+
+                <form id="bookingForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="labSelect">Laboratory</label>
+                            <select id="labSelect" required>
+                                <option value="">Select a laboratory</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requestedDate">Booking Date</label>
+                            <input type="date" id="requestedDate" required disabled>
+                        </div>
+
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <p><strong>Laboratory Schedule Information</strong></p>
+                            <div id="scheduleDisplay" class="info">
+                                Select a laboratory and date to view its schedules.
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startTime">Start Time</label>
+                            <input type="time" id="startTime" required disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endTime">End Time</label>
+                            <input type="time" id="endTime" required disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="purpose">Purpose</label>
+                            <input
+                                type="text"
+                                id="purpose"
+                                maxlength="255"
+                                placeholder="Enter booking purpose"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+                    <button type="submit" class="primary-button" id="submitButton">
+                        Submit Booking Request
+                    </button>
+
+                </form>
+
+            </section>
+
+            <!-- BOOKING RECORDS -->
+            <section class="booking-card">
+
+                <h2>Booking Records</h2>
+
+                <div id="bookingMessage" class="message"></div>
+
+                <div class="table-wrapper">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Laboratory</th>
+                                <th>Requester</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Purpose</th>
+                                <th>Status</th>
+                                <th id="actionsHeader">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="bookingTableBody">
+                            <tr>
+                                <td colspan="8" class="empty">Loading bookings...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+        <footer class="dashboard-footer">
+            &copy; 2026 LabTrack. All rights reserved.
+        </footer>
+
+    </main>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/booking.js"></script>
+
+<script>
+    const menuButton = document.getElementById("menuButton");
+    const dashboardLayout = document.querySelector(".dashboard-layout");
+
+    menuButton.addEventListener("click", function () {
+        dashboardLayout.classList.toggle("sidebar-collapsed");
+
+        const isExpanded =
+            !dashboardLayout.classList.contains("sidebar-collapsed");
+
+        menuButton.setAttribute("aria-expanded", isExpanded);
+    });
+</script>
+
+</body>
+</html>
