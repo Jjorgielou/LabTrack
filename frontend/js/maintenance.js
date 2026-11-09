@@ -437,9 +437,7 @@ async function submitIssue(event) {
     event.preventDefault();
 
     const id = document.getElementById("edit_issue_id").value;
-
     const description = document.getElementById("description").value.trim();
-
     const status = document.getElementById("issue_status").value.trim();
 
     if (!description) {
@@ -451,10 +449,7 @@ async function submitIssue(event) {
         if (id) {
             await maintenanceRequest(`/requests/${id}`, {
                 method: "PUT",
-                body: JSON.stringify({
-                    description,
-                    status
-                })
+                body: JSON.stringify({ description, status })
             });
         } else {
             const equipmentId =
@@ -465,7 +460,7 @@ async function submitIssue(event) {
                 return;
             }
 
-            await maintenanceRequest("", {
+            await maintenanceRequest("/requests", {
                 method: "POST",
                 body: JSON.stringify({
                     equipment_id: equipmentId,
@@ -475,7 +470,6 @@ async function submitIssue(event) {
         }
 
         toggleModal("issueModal", false);
-
         await loadMaintenanceData();
 
     } catch (error) {
@@ -584,7 +578,7 @@ async function deleteItem(type, id) {
     }
 
     const endpoints = {
-        requests: `/${id}`,
+        requests: `/requests/${id}`,
         records: `/records/${id}`,
         statuses: `/statuses/${id}`
     };

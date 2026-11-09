@@ -1,80 +1,82 @@
-const db = require('../config/db');
+const express = require("express");
+const router = express.Router();
 
-const Maintenance = {
-    getAllRequests: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_requests');
-        return rows;
-    },
-    createRequest: async (data) => {
-        const { equipment_id, description, status } = data;
-        const [result] = await db.query(
-            'INSERT INTO maintenance_requests (equipment_id, description, status) VALUES (?, ?, ?)',
-            [equipment_id, description, status]
-        );
-        return result.insertId;
-    },
-    updateRequest: async (id, data) => {
-        const { equipment_id, description, status } = data;
-        await db.query(
-            'UPDATE maintenance_requests SET equipment_id = ?, description = ?, status = ? WHERE id = ?',
-            [equipment_id, description, status, id]
-        );
-    },
-    deleteRequest: async (id) => {
-        await db.query('DELETE FROM maintenance_requests WHERE id = ?', [id]);
-    },
+const maintenanceController = require("../controllers/maintenanceController");
+const requireAuth = require("../middleware/requireAuth");
 
-    getAllRecords: async () => {
-        const query = `
-            SELECT m.*, e.name AS equipment_name, u.name AS user_name
-            FROM maintenance_records m
-            LEFT JOIN equipment e ON m.equipment_id = e.id
-            LEFT JOIN users u ON m.user_id = u.id
-        `;
-        const [rows] = await db.query(query);
-        return rows;
-    },
-    createRecord: async (data) => {
-        const { request_id, work_performed, technician } = data;
-        const [result] = await db.query(
-            'INSERT INTO maintenance_records (request_id, work_performed, technician) VALUES (?, ?, ?)',
-            [request_id, work_performed, technician]
-        );
-        return result.insertId;
-    },
-    updateRecord: async (id, data) => {
-        const { request_id, work_performed, technician } = data;
-        await db.query(
-            'UPDATE maintenance_records SET request_id = ?, work_performed = ?, technician = ? WHERE id = ?',
-            [request_id, work_performed, technician, id]
-        );
-    },
-    deleteRecord: async (id) => {
-        await db.query('DELETE FROM maintenance_records WHERE id = ?', [id]);
-    },
+// MAINTENANCE REQUESTS
+router.get(
+    "/requests",
+    requireAuth,
+    maintenanceController.getRequests
+);
 
-    getAllStatuses: async () => {
-        const [rows] = await db.query('SELECT * FROM maintenance_statuses');
-        return rows;
-    },
-    createStatus: async (data) => {
-        const { name, description } = data;
-        const [result] = await db.query(
-            'INSERT INTO maintenance_statuses (name, description) VALUES (?, ?)',
-            [name, description]
-        );
-        return result.insertId;
-    },
-    updateStatus: async (id, data) => {
-        const { name, description } = data;
-        await db.query(
-            'UPDATE maintenance_statuses SET name = ?, description = ? WHERE id = ?',
-            [name, description, id]
-        );
-    },
-    deleteStatus: async (id) => {
-        await db.query('DELETE FROM maintenance_statuses WHERE id = ?', [id]);
-    }
-};
+router.post(
+    "/requests",
+    requireAuth,
+    maintenanceController.createRequest
+);
 
-module.exports = Maintenance;
+router.put(
+    "/requests/:id",
+    requireAuth,
+    maintenanceController.updateRequest
+);
+
+router.delete(
+    "/requests/:id",
+    requireAuth,
+    maintenanceController.deleteRequest
+);
+
+// MAINTENANCE RECORDS
+router.get(
+    "/records",
+    requireAuth,
+    maintenanceController.getRecords
+);
+
+router.post(
+    "/records",
+    requireAuth,
+    maintenanceController.createRecord
+);
+
+router.put(
+    "/records/:id",
+    requireAuth,
+    maintenanceController.updateRecord
+);
+
+router.delete(
+    "/records/:id",
+    requireAuth,
+    maintenanceController.deleteRecord
+);
+
+// MAINTENANCE STATUSES
+router.get(
+    "/statuses",
+    requireAuth,
+    maintenanceController.getStatuses
+);
+
+router.post(
+    "/statuses",
+    requireAuth,
+    maintenanceController.createStatus
+);
+
+router.put(
+    "/statuses/:id",
+    requireAuth,
+    maintenanceController.updateStatus
+);
+
+router.delete(
+    "/statuses/:id",
+    requireAuth,
+    maintenanceController.deleteStatus
+);
+
+module.exports = router;
