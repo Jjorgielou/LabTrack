@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const createScheduleButton = document.getElementById("createScheduleButton");
 
     const pageMessage = document.getElementById("pageMessage");
+const logoutButton = document.getElementById("logoutButton");
     const formMessage = document.getElementById("formMessage");
     const scheduleMessage = document.getElementById("scheduleMessage");
     const bookingMessage = document.getElementById("bookingMessage");
@@ -874,6 +875,33 @@ async function loadSchedulesForSelectedDate() {
             submitButton.textContent = "Submit Booking Request";
         }
     });
+// SIGN OUT
+if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+        try {
+            logoutButton.disabled = true;
+            logoutButton.textContent = "Signing out...";
+
+            await apiRequest("/auth/logout", {
+                method: "POST"
+            });
+
+            window.location.href = "login.html";
+
+        } catch (error) {
+            console.error("Logout error:", error);
+
+            showMessage(
+                pageMessage,
+                error.message || "Unable to sign out. Please try again.",
+                "error"
+            );
+
+            logoutButton.disabled = false;
+            logoutButton.textContent = "Sign Out";
+        }
+    });
+}
 
     // INITIALIZE PAGE
     async function initializePage() {
